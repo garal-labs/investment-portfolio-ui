@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,400;1,600&family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+/* ── Variables Garal — Light Mode ───────────────────────────────────────── */
+:root {
+  /* Fondos */
+  --color-bg:        #f7f3ee;   /* fondo principal crema */
+  --color-surface:   #ffffff;   /* cards / topbar */
+  --color-border:    #ece7e1;   /* bordes principales */
+  --color-border-2:  #f5f0eb;   /* bordes internos de tabla */
+
+  /* Sidebar */
+  --color-sidebar:   #2D6A5A;   /* verde sólido */
+  --color-sidebar-active: rgba(255,255,255,.18);
+  --color-sidebar-border: rgba(255,255,255,.15);
+
+  /* Texto */
+  --color-ink:       #221e1a;   /* texto principal oscuro */
+  --color-ink-2:     #6a5a4a;   /* texto secundario umber */
+  --color-muted:     #a09080;   /* texto terciario taupe */
+
+  /* Acento */
+  --color-primary:   #2D6A5A;   /* verde Garal */
+  --color-moss:      #4a7a5a;
+  --color-plum:      #8a3a6a;
+  --color-plum-l:    #c47aab;
+  --color-amber:     #c4956a;
+  --color-amber-l:   #e8c890;
+  --color-umber:     #6a5a4a;
+
+  /* Badges tipo activo */
+  --badge-accion-bg: #eaf3de;   --badge-accion-fg: #27500a;
+  --badge-etf-bg:    #e6f1fb;   --badge-etf-fg:    #0c447c;
+  --badge-fondo-bg:  #f0eaf8;   --badge-fondo-fg:  #5b2d8a;
+  --badge-otro-bg:   #f5f2ee;   --badge-otro-fg:   #6a5a4a;
+}
+
+@theme {
+  --color-bg:      #f7f3ee;
+  --color-surface: #ffffff;
+  --color-border:  #ece7e1;
+  --color-border-2:#f5f0eb;
+  --color-sidebar: #2D6A5A;
+  --color-ink:     #221e1a;
+  --color-ink-2:   #6a5a4a;
+  --color-muted:   #a09080;
+  --color-primary: #2D6A5A;
+  --color-moss:    #4a7a5a;
+  --color-plum:    #8a3a6a;
+  --color-plum-l:  #c47aab;
+  --color-amber:   #c4956a;
+  --color-amber-l: #e8c890;
+  --color-umber:   #6a5a4a;
+
+  --font-sans:  'DM Sans', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-lora:  'Lora', Georgia, serif;
+  --font-mono:  ui-monospace, monospace;
+
+  --radius-card: 10px;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 3px; }
+
+/* ── Clases reutilizables ────────────────────────────────────────────────── */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.section-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-bottom: 0.4rem;
+}
+
+.input-dark {
+  width: 100%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input-dark::placeholder { color: var(--color-muted); }
+.input-dark:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(45,106,90,0.12);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 500;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: var(--color-moss); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-ghost {
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-ink-2);
+  font-weight: 500;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-ghost:hover { border-color: var(--color-primary); color: var(--color-ink); }
+
+/* ── Badges tipo activo ──────────────────────────────────────────────────── */
+.badge-accion { font-size:9px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--badge-accion-bg); color:var(--badge-accion-fg); }
+.badge-etf    { font-size:9px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--badge-etf-bg);    color:var(--badge-etf-fg); }
+.badge-fondo  { font-size:9px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--badge-fondo-bg);  color:var(--badge-fondo-fg); }
+.badge-otro   { font-size:9px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--badge-otro-bg);   color:var(--badge-otro-fg); }
+
+/* ── Badges sector ───────────────────────────────────────────────────────── */
+.badge-sector  { font-size:9px; font-weight:700; padding:2px 7px; border-radius:4px; background:#eef5f2; color:var(--color-primary); }
+.badge-pais    { font-size:9px; font-weight:700; padding:2px 7px; border-radius:4px; background:#fdf3ea; color:var(--color-amber); }
+.badge-moneda  { font-size:9px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--badge-otro-bg); color:var(--color-ink-2); }
+
+/* ── Rentabilidad ────────────────────────────────────────────────────────── */
+.rent-pos  { color: var(--color-primary); font-weight: 500; }
+.rent-neg  { color: var(--color-plum);    font-weight: 500; }
+.rent-zero { color: var(--color-amber);   font-weight: 500; }
