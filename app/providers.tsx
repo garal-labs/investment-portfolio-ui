@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { AuthProvider } from '@/contexts/AuthContext'
+import { CarteraProvider } from '@/contexts/CarteraContext'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -18,7 +20,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <AuthProvider>
+        <CarteraProvider>
+          {children}
+        </CarteraProvider>
+      </AuthProvider>
     </QueryClientProvider>
   )
 }
