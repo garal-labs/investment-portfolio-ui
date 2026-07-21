@@ -1,3 +1,28 @@
+// ── Autenticación ─────────────────────────────────────────────────────────────
+
+export interface User {
+  id: number
+  email: string
+  nombre?: string
+  created_at: string
+}
+
+export interface LoginPayload {
+  email: string
+  password: string
+}
+
+export interface RegisterPayload {
+  email: string
+  password: string
+  nombre?: string
+}
+
+export interface ResetPasswordPayload {
+  token: string
+  password: string
+}
+
 // ── Entidades base ────────────────────────────────────────────────────────────
 
 export interface Cartera {
