@@ -1,16 +1,20 @@
 'use client'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, LogOut } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { useActiveCartera } from '@/contexts/CarteraContext'
+import { CarteraSelector } from './CarteraSelector'
 
 interface TopbarProps {
   title: string
   subtitle?: string
-  carteraId?: number
 }
 
-export function Topbar({ title, subtitle, carteraId }: TopbarProps) {
+export function Topbar({ title, subtitle }: TopbarProps) {
   const qc = useQueryClient()
+  const { logout } = useAuth()
+  const { carteraId } = useActiveCartera()
   const [refreshing, setRefreshing] = useState(false)
   const [minutos, setMinutos] = useState(0)
 
@@ -22,7 +26,7 @@ export function Topbar({ title, subtitle, carteraId }: TopbarProps) {
 
   async function handleRefresh() {
     setRefreshing(true)
-    if (carteraId) {
+    if (carteraId != null) {
       await qc.invalidateQueries({ queryKey: ['resumen', carteraId] })
       await qc.invalidateQueries({ queryKey: ['analisis', carteraId] })
     }
@@ -52,7 +56,8 @@ export function Topbar({ title, subtitle, carteraId }: TopbarProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        {carteraId && (
+        <CarteraSelector />
+        {carteraId != null && (
           <span
             className="text-[9px] font-bold tracking-[.12em] uppercase rounded-full px-2.5 py-[3px]"
             style={{
@@ -70,6 +75,14 @@ export function Topbar({ title, subtitle, carteraId }: TopbarProps) {
           title="Actualizar precios"
         >
           <RefreshCw size={15} className={refreshing ? 'animate-spin' : ''} />
+        </button>
+        <button
+          onClick={() => logout()}
+          className="p-1 transition-colors"
+          style={{ color: 'var(--color-muted)' }}
+          title="Cerrar sesión"
+        >
+          <LogOut size={15} />
         </button>
       </div>
     </header>
