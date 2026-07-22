@@ -37,6 +37,14 @@ function persistCarteraId(id: number | null) {
   }
 }
 
+// Exposed for `AuthContext.logout()` — a plain function, not a hook, so it
+// can be called regardless of provider nesting order. Without this, a fresh
+// login would restore a previous user's cartera selection from localStorage
+// (cross-user leak fix; see design.md gap noted during Phase 3 security review).
+export function clearActiveCarteraSelection() {
+  persistCarteraId(null)
+}
+
 export function CarteraProvider({ children }: { children: React.ReactNode }) {
   const { data: carteras = [], isLoading } = useQuery({
     queryKey: ['carteras'],

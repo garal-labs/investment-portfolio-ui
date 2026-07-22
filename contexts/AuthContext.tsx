@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { auth, setUnauthorizedHandler } from '@/lib/api'
+import { clearActiveCarteraSelection } from '@/contexts/CarteraContext'
 import type { LoginPayload, RegisterPayload, ResetPasswordPayload, User } from '@/types'
 
 interface AuthContextValue {
@@ -53,7 +54,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function login(data: LoginPayload) {
     await auth.login(data)
-    await queryClient.invalidateQueries({ queryKey: ME_KEY })
+    // Broadened from `ME_KEY`-only: queries mounted at the app root (e.g.
+    // CarteraContext's `['carteras']`) live for the whole app lifetime and
+    // never unmount between a logout and the next login, so they must be
+    // told the identity changed too — otherwise they keep serving the
+    // previous session's response instead of refetching against the new
+    // one (confirmed while building the logout cache-isolation regression
+    // test: mounted queries do not self-refresh on their own).
+    await queryClient.invalidateQueries()
   }
 
   async function register(data: RegisterPayload) {
@@ -63,7 +71,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function logout() {
     await auth.logout()
+    // Immediately reflect "logged out" for the auth-state query itself.
+    // `resetQueries()`/`clear()` do NOT synchronously notify observers that
+    // are already mounted (AuthProvider's own `['auth','me']` query is
+    // exactly such an observer — it lives for the app's lifetime) — only an
+    // explicit `setQueryData` does. Confirmed empirically: without this,
+    // the UI kept rendering the logged-out user until an unrelated refetch
+    // happened to fire.
     queryClient.setQueryData(ME_KEY, null)
+    // Reset every OTHER cached query — not just `['auth','me']`.
+    // `['carteras']` (CarteraContext) and `['resumen'|'analisis'|
+    // 'movimientos', carteraId]` (useCartera.ts) are user-scoped and must
+    // not survive into the next session. `resetQueries()` (not `clear()`)
+    // is required here: `clear()` only removes cache *entries*, it does not
+    // notify already-mounted observers (same gap as above) — CarteraContext
+    // never unmounts across this transition, so `clear()` alone left it
+    // rendering the previous user's cartera list in testing.
+    // `resetQueries()` with no key filter over enumerating keys: new
+    // cartera-scoped keys added later would otherwise be missed (original
+    // security review finding).
+    await queryClient.resetQueries({ predicate: query => query.queryKey[0] !== 'auth' })
+    // The active cartera selection is also user-scoped — clearing it
+    // prevents a fresh login from restoring a previous user's choice.
+    clearActiveCarteraSelection()
     router.replace('/login')
   }
 
