@@ -29,31 +29,31 @@ export function useEliminarCartera() {
 
 // ── Resumen y análisis ────────────────────────────────────────────────────────
 
-export function useResumen(carteraId: number) {
+export function useResumen(carteraId: number | null) {
   return useQuery({
     queryKey: ['resumen', carteraId],
-    queryFn: () => portfolio.resumen(carteraId),
-    enabled: !!carteraId,
+    queryFn: () => portfolio.resumen(carteraId as number),
+    enabled: carteraId !== null,
     refetchInterval: 5 * 60 * 1000,  // refresca precios cada 5 min
   })
 }
 
-export function useAnalisis(carteraId: number) {
+export function useAnalisis(carteraId: number | null) {
   return useQuery({
     queryKey: ['analisis', carteraId],
-    queryFn: () => portfolio.analisis(carteraId),
-    enabled: !!carteraId,
+    queryFn: () => portfolio.analisis(carteraId as number),
+    enabled: carteraId !== null,
     refetchInterval: 5 * 60 * 1000,
   })
 }
 
 // ── Movimientos ───────────────────────────────────────────────────────────────
 
-export function useMovimientos(carteraId: number) {
+export function useMovimientos(carteraId: number | null) {
   return useQuery({
     queryKey: ['movimientos', carteraId],
-    queryFn: () => movimientos.listar(carteraId),
-    enabled: !!carteraId,
+    queryFn: () => movimientos.listar(carteraId as number),
+    enabled: carteraId !== null,
   })
 }
 
@@ -69,7 +69,7 @@ export function useCrearMovimiento() {
   })
 }
 
-export function useEliminarMovimiento(carteraId: number) {
+export function useEliminarMovimiento(carteraId: number | null) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: number) => movimientos.eliminar(id),

@@ -5,10 +5,8 @@ import { KpiCard } from '@/components/ui/KpiCard'
 import { Loading, EmptyState } from '@/components/ui/Loading'
 import { BarrasPeso } from '@/components/charts/BarrasPeso'
 import { useResumen, useAnalisis } from '@/hooks/useCartera'
+import { useActiveCartera } from '@/contexts/CarteraContext'
 import { formatEur, formatPct, signRent } from '@/lib/utils'
-import { DEFAULT_CARTERA_ID } from '@/lib/config'
-
-const CARTERA_ID = DEFAULT_CARTERA_ID
 
 function TipoBadge({ tipo }: { tipo?: string }) {
   const t = (tipo ?? 'otro').toLowerCase()
@@ -19,19 +17,23 @@ function TipoBadge({ tipo }: { tipo?: string }) {
 }
 
 export default function DashboardPage() {
-  const { data: resumen, isLoading, isError } = useResumen(CARTERA_ID)
-  const { data: analisis } = useAnalisis(CARTERA_ID)
+  const { carteraId, isLoading: carteraLoading } = useActiveCartera()
+  const { data: resumen, isLoading, isError } = useResumen(carteraId)
+  const { data: analisis } = useAnalisis(carteraId)
 
   return (
     <AppShell>
       <Topbar
         title="Mi cartera principal"
         subtitle={resumen ? `${resumen.num_posiciones} posiciones activas` : undefined}
-        carteraId={CARTERA_ID}
       />
 
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
-        {isLoading && <Loading text="Cargando posiciones y precios..." />}
+        {carteraLoading && <Loading text="Cargando carteras..." />}
+        {!carteraLoading && carteraId === null && (
+          <EmptyState text="No tenés carteras todavía. La gestión de carteras llega próximamente en Ajustes." />
+        )}
+        {carteraId !== null && isLoading && <Loading text="Cargando posiciones y precios..." />}
 
         {resumen && (
           <>
@@ -202,10 +204,10 @@ export default function DashboardPage() {
           </>
         )}
 
-        {isError && (
+        {carteraId !== null && isError && (
           <EmptyState text="Error al conectar con el servidor. Verificá que el backend esté activo." />
         )}
-        {!isLoading && !isError && !resumen && (
+        {carteraId !== null && !isLoading && !isError && !resumen && (
           <EmptyState text="No se pudo cargar la cartera. ¿Está el backend activo?" />
         )}
       </div>
