@@ -5,16 +5,15 @@ import { Topbar } from '@/components/layout/Topbar'
 import { MovimientoForm } from '@/components/forms/MovimientoForm'
 import { Loading, EmptyState } from '@/components/ui/Loading'
 import { useMovimientos, useEliminarMovimiento } from '@/hooks/useCartera'
+import { useActiveCartera } from '@/contexts/CarteraContext'
 import { formatEur, formatFecha } from '@/lib/utils'
-import { DEFAULT_CARTERA_ID } from '@/lib/config'
 import { Trash2, Plus, X } from 'lucide-react'
-
-const CARTERA_ID = DEFAULT_CARTERA_ID
 
 export default function MovimientosPage() {
   const [showForm, setShowForm] = useState(false)
-  const { data: movs, isLoading, isError } = useMovimientos(CARTERA_ID)
-  const { mutate: eliminar } = useEliminarMovimiento(CARTERA_ID)
+  const { carteraId, isLoading: carteraLoading } = useActiveCartera()
+  const { data: movs, isLoading, isError } = useMovimientos(carteraId)
+  const { mutate: eliminar } = useEliminarMovimiento(carteraId)
 
   return (
     <AppShell>
@@ -22,6 +21,13 @@ export default function MovimientosPage() {
 
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
 
+        {carteraLoading && <Loading text="Cargando carteras..." />}
+        {!carteraLoading && carteraId === null && (
+          <EmptyState text="No tenés carteras todavía. La gestión de carteras llega próximamente en Ajustes." />
+        )}
+
+        {carteraId !== null && (
+        <>
         {/* Botón añadir */}
         <div className="flex justify-end">
           <button
@@ -38,7 +44,7 @@ export default function MovimientosPage() {
           <div className="card p-5">
             <p className="section-label mb-4">Añadir movimiento</p>
             <MovimientoForm
-              carteraId={CARTERA_ID}
+              carteraId={carteraId}
               onSuccess={() => setShowForm(false)}
             />
           </div>
@@ -142,6 +148,8 @@ export default function MovimientosPage() {
         )}
         {!isLoading && !isError && movs?.length === 0 && (
           <EmptyState text="No hay movimientos aún. Añade tu primera operación." />
+        )}
+        </>
         )}
       </div>
     </AppShell>
