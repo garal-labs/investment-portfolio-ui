@@ -67,3 +67,14 @@ export function formatFecha(fecha: string): string {
 export function hoy(): string {
   return new Date().toISOString().split('T')[0]
 }
+
+// ── Errores de API ──────────────────────────────────────────────────────────
+
+export function getErrorMessage(error: unknown, fallback: string): string {
+  const detail =
+    error != null &&
+    typeof error === 'object' &&
+    'response' in error &&
+    (error as { response?: { data?: { detail?: string } } }).response?.data?.detail
+  return detail || fallback
+}

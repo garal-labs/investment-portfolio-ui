@@ -5,10 +5,8 @@ import { KpiCard } from '@/components/ui/KpiCard'
 import { Loading, EmptyState } from '@/components/ui/Loading'
 import { BarrasPeso } from '@/components/charts/BarrasPeso'
 import { useResumen, useAnalisis } from '@/hooks/useCartera'
+import { useActiveCartera } from '@/contexts/CarteraContext'
 import { formatEur, formatPct, signRent } from '@/lib/utils'
-import { DEFAULT_CARTERA_ID } from '@/lib/config'
-
-const CARTERA_ID = DEFAULT_CARTERA_ID
 
 function TipoBadge({ tipo }: { tipo?: string }) {
   const t = (tipo ?? 'otro').toLowerCase()
@@ -19,19 +17,23 @@ function TipoBadge({ tipo }: { tipo?: string }) {
 }
 
 export default function DashboardPage() {
-  const { data: resumen, isLoading, isError } = useResumen(CARTERA_ID)
-  const { data: analisis } = useAnalisis(CARTERA_ID)
+  const { carteraId, isLoading: carteraLoading } = useActiveCartera()
+  const { data: resumen, isLoading, isError } = useResumen(carteraId)
+  const { data: analisis } = useAnalisis(carteraId)
 
   return (
     <AppShell>
       <Topbar
         title="Mi cartera principal"
         subtitle={resumen ? `${resumen.num_posiciones} posiciones activas` : undefined}
-        carteraId={CARTERA_ID}
       />
 
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
-        {isLoading && <Loading text="Cargando posiciones y precios..." />}
+        {carteraLoading && <Loading text="Cargando carteras..." />}
+        {!carteraLoading && carteraId === null && (
+          <EmptyState text="No tenés carteras todavía. La gestión de carteras llega próximamente en Ajustes." />
+        )}
+        {carteraId !== null && isLoading && <Loading text="Cargando posiciones y precios..." />}
 
         {resumen && (
           <>
@@ -66,7 +68,7 @@ export default function DashboardPage() {
               <table className="w-full border-collapse text-[12px]">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    {['Instrumento', 'Tipo', 'Sector', 'Valor', 'P. medio', 'Rent.'].map(h => (
+                     {['Instrumento', 'Tipo', 'Sector', 'P. medio', 'P. actual', 'Acciones', 'Valor', 'Beneficio', 'Peso', 'Rent.'].map(h => (
                       <th
                         key={h}
                         style={{
@@ -76,7 +78,7 @@ export default function DashboardPage() {
                           letterSpacing: '0.10em',
                           textTransform: 'uppercase',
                           color: 'var(--color-muted)',
-                          textAlign: ['Valor', 'P. medio', 'Rent.'].includes(h) ? 'right' : 'left',
+                          textAlign: ['P. medio', 'P. actual', 'Acciones', 'Valor', 'Beneficio', 'Peso', 'Rent.'].includes(h) ? 'right' : 'left',
                           whiteSpace: 'nowrap',
                         }}
                       >
@@ -93,6 +95,18 @@ export default function DashboardPage() {
                       : rent > 0   ? 'var(--color-primary)'
                       : rent < 0   ? 'var(--color-plum)'
                       : 'var(--color-amber)'
+
+                    const beneficio = pos.plusvalia_latente
+                    const beneficioColor =
+                      beneficio == null ? 'var(--color-muted)'
+                      : beneficio > 0   ? 'var(--color-primary)'
+                      : beneficio < 0   ? 'var(--color-plum)'
+                      : 'var(--color-amber)'
+
+                    const valorPos = pos.valor_actual ?? pos.coste_total
+                    const peso = resumen.valor_total > 0
+                      ? (valorPos / resumen.valor_total) * 100
+                      : null
 
                     return (
                       <tr
@@ -124,18 +138,38 @@ export default function DashboardPage() {
                           )}
                         </td>
 
-                        {/* Valor */}
-                        <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
-                          {formatEur(pos.valor_actual ?? pos.coste_total)}
-                        </td>
-
                         {/* Precio medio */}
-                        <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
-                          {formatEur(pos.precio_medio)}
-                        </td>
+                         <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
+                           {formatEur(pos.precio_medio)}
+                         </td>
 
-                        {/* Rentabilidad */}
-                        <td
+                         {/* Precio actual */}
+                         <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
+                           {pos.precio_actual != null ? formatEur(pos.precio_actual) : '—'}
+                         </td>
+
+                         {/* Acciones */}
+                         <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
+                           {pos.cantidad_actual}
+                         </td>
+
+                         {/* Valor */}
+                         <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
+                           {formatEur(pos.valor_actual ?? pos.coste_total)}
+                         </td>
+
+                         {/* Beneficio */}
+                         <td className="px-3.5 py-[9px] text-right font-medium" style={{ color: beneficioColor }}>
+                           {beneficio != null ? `${signRent(beneficio)}${formatEur(beneficio)}` : '—'}
+                         </td>
+
+                         {/* Peso en cartera */}
+                         <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
+                           {peso != null ? `${peso.toFixed(1)}%` : '—'}
+                         </td>
+
+                         {/* Rentabilidad */}
+                         <td
                           className="px-3.5 py-[9px] text-right font-medium"
                           style={{ color: rentColor }}
                         >
@@ -147,7 +181,7 @@ export default function DashboardPage() {
 
                   {resumen.posiciones.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-4 py-6 text-center font-lora italic text-sm" style={{ color: 'var(--color-muted)' }}>
+                      <td colSpan={10} className="px-4 py-6 text-center font-lora italic text-sm" style={{ color: 'var(--color-muted)' }}>
                         No hay posiciones aún. Añade tu primer movimiento.
                       </td>
                     </tr>
@@ -170,10 +204,10 @@ export default function DashboardPage() {
           </>
         )}
 
-        {isError && (
+        {carteraId !== null && isError && (
           <EmptyState text="Error al conectar con el servidor. Verificá que el backend esté activo." />
         )}
-        {!isLoading && !isError && !resumen && (
+        {carteraId !== null && !isLoading && !isError && !resumen && (
           <EmptyState text="No se pudo cargar la cartera. ¿Está el backend activo?" />
         )}
       </div>
