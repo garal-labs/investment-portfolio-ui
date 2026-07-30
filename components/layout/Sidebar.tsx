@@ -1,17 +1,19 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ArrowLeftRight, BarChart2, Settings } from 'lucide-react'
+import { LayoutDashboard, ArrowLeftRight, Settings } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 const NAV = [
-  { href: '/dashboard',    label: 'Resumen',      icon: LayoutDashboard },
-  { href: '/analisis',     label: 'Análisis',     icon: BarChart2 },
-  { href: '/movimientos',  label: 'Movimientos',  icon: ArrowLeftRight },
-  { href: '/ajustes',      label: 'Ajustes',      icon: Settings },
+  { href: '/dashboard', label: 'Resumen', icon: LayoutDashboard },
+  { href: '/movimientos', label: 'Movimientos', icon: ArrowLeftRight },
+  { href: '/ajustes', label: 'Ajustes', icon: Settings },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { user } = useAuth()
+  const displayName = user?.nombre || user?.email || 'Cargando...'
 
   return (
     <aside
@@ -23,8 +25,8 @@ export function Sidebar() {
         className="px-[18px] py-5"
         style={{ borderBottom: '1px solid rgba(255,255,255,.15)' }}
       >
-        <div className="font-serif text-[18px] font-bold text-white tracking-tight">
-          Garal
+        <div className="font-serif text-[18px] font-bold text-white tracking-tight truncate">
+          {displayName}
         </div>
         <div className="font-lora italic text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,.65)' }}>
           mi cartera
