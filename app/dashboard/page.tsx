@@ -1,6 +1,7 @@
 'use client'
 import { AppShell } from '@/components/layout/AppShell'
 import { Topbar } from '@/components/layout/Topbar'
+import { CarteraSelector } from '@/components/layout/CarteraSelector'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { Loading, EmptyState } from '@/components/ui/Loading'
 import { BarrasPeso } from '@/components/charts/BarrasPeso'
@@ -17,14 +18,15 @@ function TipoBadge({ tipo }: { tipo?: string }) {
 }
 
 export default function DashboardPage() {
-  const { carteraId, isLoading: carteraLoading } = useActiveCartera()
+  const { carteraId, carteras, isLoading: carteraLoading } = useActiveCartera()
+  const activeCartera = carteras.find(c => c.id === carteraId)
   const { data: resumen, isLoading, isError } = useResumen(carteraId)
   const { data: analisis } = useAnalisis(carteraId)
 
   return (
     <AppShell>
       <Topbar
-        title="Mi cartera principal"
+        title={<CarteraSelector fallbackTitle="Mi cartera principal" />}
         subtitle={resumen ? `${resumen.num_posiciones} posiciones activas` : undefined}
       />
 
