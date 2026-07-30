@@ -1,8 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useCrearMovimiento, useAutodescubrir } from '@/hooks/useCartera'
 import { hoy } from '@/lib/utils'
-import { Loader2, Sparkles } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 interface MovimientoFormProps {
   carteraId: number
@@ -18,16 +18,29 @@ export function MovimientoForm({ carteraId, onSuccess }: MovimientoFormProps) {
   const [comision, setComision]     = useState('')
   const [tipoCambio, setTipoCambio] = useState('')
   const [notas, setNotas]           = useState('')
-  const [isinBuscado, setIsinBuscado] = useState('')
   const [error, setError]           = useState('')
 
-  const { data: instrumento, isFetching: buscando } = useAutodescubrir(isinBuscado)
+  const [nombreEmpresa, setNombreEmpresa]     = useState('')
+  const [ticker, setTicker]                   = useState('')
+  const [sector, setSector]                   = useState('')
+  const [moneda, setMoneda]                   = useState('')
+  const [tipoInstrumento, setTipoInstrumento] = useState('')
+
+  const isinCompleto = isin.length === 12
+  const { data: instrumento, isFetching: buscando } = useAutodescubrir(isinCompleto ? isin : '')
   const { mutateAsync: crearMovimiento, isPending }  = useCrearMovimiento()
 
-  function handleAutodescubrir() {
-    if (isin.length < 12) return
-    setIsinBuscado(isin)
-  }
+  useEffect(() => {
+    if (!isinCompleto) {
+      setNombreEmpresa(''); setTicker(''); setSector(''); setMoneda(''); setTipoInstrumento('')
+      return
+    }
+    setNombreEmpresa(instrumento?.nombre ?? '')
+    setTicker(instrumento?.ticker ?? '')
+    setSector(instrumento?.sector ?? '')
+    setMoneda(instrumento?.moneda ?? '')
+    setTipoInstrumento(instrumento?.tipo ?? '')
+  }, [instrumento, isinCompleto])
 
   async function handleSubmit() {
     setError('')
@@ -48,7 +61,7 @@ export function MovimientoForm({ carteraId, onSuccess }: MovimientoFormProps) {
         notas: notas || undefined,
       })
       setIsin(''); setCantidad(''); setPrecio(''); setComision('')
-      setTipoCambio(''); setNotas(''); setIsinBuscado('')
+      setTipoCambio(''); setNotas('')
       onSuccess?.()
     } catch (e: unknown) {
       const detail =
@@ -62,35 +75,43 @@ export function MovimientoForm({ carteraId, onSuccess }: MovimientoFormProps) {
 
   return (
     <div className="space-y-4">
-      {/* ISIN + Autodescubrir */}
+      {/* ISIN */}
       <div>
-        <label className="section-label">ISIN</label>
-        <div className="flex gap-2">
-          <input
-            className="input-dark flex-1"
-            placeholder="ES0148396007"
-            value={isin}
-            onChange={e => setIsin(e.target.value.toUpperCase())}
-            maxLength={12}
-          />
-          <button
-            onClick={handleAutodescubrir}
-            disabled={isin.length < 12 || buscando}
-            className="btn-ghost flex items-center gap-1.5 px-3"
-            title="Autodetectar con IA"
-          >
-            {buscando
-              ? <Loader2 size={14} className="animate-spin" />
-              : <Sparkles size={14} />
-            }
-            <span className="text-xs">IA</span>
-          </button>
+        <label className="section-label flex items-center gap-1.5">
+          ISIN
+          {buscando && <Loader2 size={12} className="animate-spin" style={{ color: 'var(--color-primary)' }} />}
+        </label>
+        <input
+          className="input-dark"
+          placeholder="ES0148396007"
+          value={isin}
+          onChange={e => setIsin(e.target.value.toUpperCase())}
+          maxLength={12}
+        />
+      </div>
+
+      {/* Datos del instrumento (autocompletados a partir del ISIN, solo lectura) */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="section-label">Nombre de la empresa</label>
+          <input className="input-dark input-autofill" placeholder="—" value={nombreEmpresa} readOnly disabled />
         </div>
-        {instrumento && (
-          <p className="text-xs mt-1.5 font-lora italic" style={{ color: 'var(--color-primary)' }}>
-            ✓ {instrumento.nombre} · {instrumento.sector} · {instrumento.pais} · {instrumento.moneda}
-          </p>
-        )}
+        <div>
+          <label className="section-label">Ticker</label>
+          <input className="input-dark input-autofill" placeholder="—" value={ticker} readOnly disabled />
+        </div>
+        <div>
+          <label className="section-label">Sector</label>
+          <input className="input-dark input-autofill" placeholder="—" value={sector} readOnly disabled />
+        </div>
+        <div>
+          <label className="section-label">Moneda</label>
+          <input className="input-dark input-autofill" placeholder="—" value={moneda} readOnly disabled />
+        </div>
+        <div className="col-span-2">
+          <label className="section-label">Tipo de instrumento</label>
+          <input className="input-dark input-autofill" placeholder="—" value={tipoInstrumento} readOnly disabled />
+        </div>
       </div>
 
       {/* Tipo */}
