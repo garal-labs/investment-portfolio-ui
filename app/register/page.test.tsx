@@ -40,7 +40,7 @@ describe('RegisterPage', () => {
     fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'super-secret-1' } })
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/dashboard'))
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/login'))
     expect(receivedBody).toMatchObject({ nombre: 'Ada Lovelace', email: 'ada@example.com' })
   })
 

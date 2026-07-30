@@ -1,15 +1,26 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { http, HttpResponse } from 'msw'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { server } from '@/test/mocks/server'
+import { AuthProvider } from './AuthContext'
 import { CarteraProvider, useActiveCartera } from './CarteraContext'
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}))
+
+// `CarteraProvider` gates its query on `useAuth()`'s `user`, so it now
+// needs an `AuthProvider` ancestor — matches the real nesting in
+// `app/providers.tsx`. The default `/auth/me` MSW handler resolves to a
+// logged-in demo user, satisfying the gate once it settles.
 function renderWithProvider(ui: React.ReactNode) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={queryClient}>
-      <CarteraProvider>{ui}</CarteraProvider>
+      <AuthProvider>
+        <CarteraProvider>{ui}</CarteraProvider>
+      </AuthProvider>
     </QueryClientProvider>,
   )
 }

@@ -20,8 +20,12 @@ export default function RegisterPage() {
     setError('')
     setSubmitting(true)
     try {
+      // `POST /auth/register` only creates the account — it does not set
+      // the session cookie, so pushing straight to a protected route just
+      // bounces back to `/login` via proxy.ts. Send the user to log in
+      // with their new credentials instead.
       await register({ email, password, nombre: nombre || undefined })
-      router.push('/dashboard')
+      router.push('/login')
     } catch (err) {
       setError(getErrorMessage(err, 'No se pudo crear la cuenta'))
       setSubmitting(false)

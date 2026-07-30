@@ -4,10 +4,11 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useActiveCartera } from '@/contexts/CarteraContext'
-import { CarteraSelector } from './CarteraSelector'
+import { CrearCarteraButton } from './CrearCarteraButton'
+import { ReactNode } from 'react'
 
 interface TopbarProps {
-  title: string
+  title: ReactNode
   subtitle?: string
 }
 
@@ -45,9 +46,13 @@ export function Topbar({ title, subtitle }: TopbarProps) {
       }}
     >
       <div>
-        <h1 className="font-serif text-[15px] font-bold" style={{ color: 'var(--color-ink)' }}>
-          {title}
-        </h1>
+        {typeof title === 'string' ? (
+          <h1 className="font-serif text-[15px] font-bold" style={{ color: 'var(--color-ink)' }}>
+            {title}
+          </h1>
+        ) : (
+          title
+        )}
         {subtitle && (
           <p className="font-lora italic text-[11px] mt-px" style={{ color: 'var(--color-muted)' }}>
             {subtitle}
@@ -56,7 +61,7 @@ export function Topbar({ title, subtitle }: TopbarProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <CarteraSelector />
+        <CrearCarteraButton />
         {carteraId != null && (
           <span
             className="text-[9px] font-bold tracking-[.12em] uppercase rounded-full px-2.5 py-[3px]"

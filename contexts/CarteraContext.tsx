@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { carteras as carterasApi } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
 import type { Cartera } from '@/types'
 
 // Selection is persisted client-side only — see design.md ("Active cartera
@@ -46,9 +47,16 @@ export function clearActiveCarteraSelection() {
 }
 
 export function CarteraProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  // Gated on `user`: without this, the query fires unauthenticated on
+  // public pages too (CarteraProvider is mounted app-wide), and its 401
+  // hits the global interceptor's redirect-to-login handler — which can
+  // race a real login's own navigation and bounce the user straight back
+  // to `/login`, looking like login "never completes".
   const { data: carteras = [], isLoading } = useQuery({
     queryKey: ['carteras'],
     queryFn: carterasApi.listar,
+    enabled: !!user,
   })
   const [carteraId, setCarteraIdState] = useState<number | null>(null)
 
