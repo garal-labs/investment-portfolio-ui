@@ -103,6 +103,13 @@ body {
   transition: border-color 0.15s;
 }
 .input-dark::placeholder { color: var(--color-muted); }
+.input-autofill {
+  background: rgba(45, 106, 90, 0.06);
+  border-style: dashed;
+  border-color: rgba(45, 106, 90, 0.3);
+  color: var(--color-primary);
+  cursor: not-allowed;
+}
 .input-dark:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(45,106,90,0.12);
