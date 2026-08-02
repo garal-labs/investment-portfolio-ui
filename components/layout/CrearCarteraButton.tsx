@@ -50,6 +50,13 @@ export function CrearCarteraButton() {
 
       {open && (
         <div
+          className="fixed inset-0 z-0"
+          onClick={handleClose}
+        />
+      )}
+
+      {open && (
+        <div
           className="card absolute right-0 top-full mt-2 p-4 z-10"
           style={{ width: 240 }}
         >
