@@ -71,6 +71,12 @@ export interface Posicion {
   plusvalia_latente?: number
   rentabilidad_pct?: number
   plusvalia_total?: number
+  precio_actual_eur?: number
+  precio_actual_nativo?: number
+  valor_actual_eur?: number
+  valor_actual_nativo?: number
+  moneda_nativa?: string
+  fx_actual?: number
 }
 
 export interface ResumenCartera {

@@ -7,7 +7,7 @@ import { Loading, EmptyState } from '@/components/ui/Loading'
 import { BarrasPeso } from '@/components/charts/BarrasPeso'
 import { useResumen, useAnalisis } from '@/hooks/useCartera'
 import { useActiveCartera } from '@/contexts/CarteraContext'
-import { formatEur, formatPct, signRent } from '@/lib/utils'
+import { formatEur, formatCurrency, formatPct, signRent } from '@/lib/utils'
 
 function TipoBadge({ tipo }: { tipo?: string }) {
   const t = (tipo ?? 'otro').toLowerCase()
@@ -105,7 +105,10 @@ export default function DashboardPage() {
                       : beneficio < 0   ? 'var(--color-plum)'
                       : 'var(--color-amber)'
 
-                    const valorPos = pos.valor_actual ?? pos.coste_total
+                    const esDivisaExtranjera = !!pos.moneda_nativa && pos.moneda_nativa !== 'EUR'
+                    const precioEur = pos.precio_actual_eur ?? pos.precio_actual
+                    const valorEur = pos.valor_actual_eur ?? pos.valor_actual ?? pos.coste_total
+                    const valorPos = valorEur
                     const peso = resumen.valor_total > 0
                       ? (valorPos / resumen.valor_total) * 100
                       : null
@@ -147,7 +150,12 @@ export default function DashboardPage() {
 
                          {/* Precio actual */}
                          <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
-                           {pos.precio_actual != null ? formatEur(pos.precio_actual) : '—'}
+                           {precioEur != null ? formatEur(precioEur) : '—'}
+                           {esDivisaExtranjera && pos.precio_actual_nativo != null && (
+                             <div className="text-[10px] font-mono" style={{ color: 'var(--color-muted)' }}>
+                               {formatCurrency(pos.precio_actual_nativo, pos.moneda_nativa)}
+                             </div>
+                           )}
                          </td>
 
                          {/* Acciones */}
@@ -157,7 +165,12 @@ export default function DashboardPage() {
 
                          {/* Valor */}
                          <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
-                           {formatEur(pos.valor_actual ?? pos.coste_total)}
+                           {formatEur(valorEur)}
+                           {esDivisaExtranjera && pos.valor_actual_nativo != null && (
+                             <div className="text-[10px] font-mono" style={{ color: 'var(--color-muted)' }}>
+                               {formatCurrency(pos.valor_actual_nativo, pos.moneda_nativa)}
+                             </div>
+                           )}
                          </td>
 
                          {/* Beneficio */}
