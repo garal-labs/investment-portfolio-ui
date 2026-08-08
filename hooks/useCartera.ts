@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { carteras, movimientos, portfolio, instrumentos } from '@/lib/api'
-import type { CarteraCreate, MovimientoCreate, InstrumentoUpdate } from '@/types'
+import type { CarteraCreate, MovimientoCreate, InstrumentoUpdate, PeriodoRentabilidad } from '@/types'
 
 // ── Carteras ──────────────────────────────────────────────────────────────────
 
@@ -44,6 +44,19 @@ export function useAnalisis(carteraId: number | null) {
     queryFn: () => portfolio.analisis(carteraId as number),
     enabled: carteraId !== null,
     refetchInterval: 5 * 60 * 1000,
+  })
+}
+
+/**
+ * `periodo: null` desactiva el fetch (ej. cuando el usuario eligió "Total",
+ * que ya se cubre con useResumen). Solo se pide un periodo concreto cuando
+ * el usuario lo selecciona explícitamente.
+ */
+export function useRentabilidad(carteraId: number | null, periodo: PeriodoRentabilidad | null) {
+  return useQuery({
+    queryKey: ['rentabilidad', carteraId, periodo],
+    queryFn: () => portfolio.rentabilidad(carteraId as number, periodo as PeriodoRentabilidad),
+    enabled: carteraId !== null && periodo !== null,
   })
 }
 

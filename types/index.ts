@@ -71,6 +71,12 @@ export interface Posicion {
   plusvalia_latente?: number
   rentabilidad_pct?: number
   plusvalia_total?: number
+  precio_actual_eur?: number
+  precio_actual_nativo?: number
+  valor_actual_eur?: number
+  valor_actual_nativo?: number
+  moneda_nativa?: string
+  fx_actual?: number
 }
 
 export interface ResumenCartera {
@@ -96,6 +102,34 @@ export interface AnalisisCartera {
   por_pais: GrupoAnalisis[]
   por_tipo: GrupoAnalisis[]
   por_moneda: GrupoAnalisis[]
+}
+
+export type PeriodoRentabilidad = '1m' | '2m' | '3m' | '6m' | '1y' | '2y' | '3y' | 'ytd'
+
+export interface PosicionRentabilidad {
+  instrumento: Instrumento
+  cantidad_actual: number
+  coste_total: number
+  valor_actual?: number
+  plusvalia_latente?: number
+  plusvalia_realizada: number
+  plusvalia_total: number
+  rentabilidad_pct: number
+  moneda_nativa?: string
+}
+
+export interface RentabilidadCartera {
+  periodo: PeriodoRentabilidad
+  fecha_inicio: string
+  fecha_fin: string
+  valor_total: number
+  coste_total: number
+  plusvalia_latente: number
+  plusvalia_realizada: number
+  plusvalia_total: number
+  rentabilidad_pct: number
+  posiciones: PosicionRentabilidad[]
+  tickers_sin_dato: string[]
 }
 
 // ── Formularios ───────────────────────────────────────────────────────────────

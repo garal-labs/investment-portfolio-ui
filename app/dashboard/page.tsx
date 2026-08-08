@@ -1,13 +1,15 @@
 'use client'
+import { useState } from 'react'
 import { AppShell } from '@/components/layout/AppShell'
 import { Topbar } from '@/components/layout/Topbar'
 import { CarteraSelector } from '@/components/layout/CarteraSelector'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { Loading, EmptyState } from '@/components/ui/Loading'
+import { PeriodoSelector, type PeriodoSeleccionado } from '@/components/ui/PeriodoSelector'
 import { BarrasPeso } from '@/components/charts/BarrasPeso'
-import { useResumen, useAnalisis } from '@/hooks/useCartera'
+import { useResumen, useAnalisis, useRentabilidad } from '@/hooks/useCartera'
 import { useActiveCartera } from '@/contexts/CarteraContext'
-import { formatEur, formatPct, signRent } from '@/lib/utils'
+import { formatEur, formatCurrency, formatPct, signRent } from '@/lib/utils'
 
 function TipoBadge({ tipo }: { tipo?: string }) {
   const t = (tipo ?? 'otro').toLowerCase()
@@ -17,11 +19,36 @@ function TipoBadge({ tipo }: { tipo?: string }) {
   return <span className="badge-otro">{tipo ?? 'Otro'}</span>
 }
 
+const PERIODO_SUB: Record<PeriodoSeleccionado, string> = {
+  total: 'total FIFO',
+  '1m': 'último mes',
+  '2m': 'últimos 2 meses',
+  '3m': 'últimos 3 meses',
+  '6m': 'últimos 6 meses',
+  ytd: 'en lo que va de año',
+  '1y': 'último año',
+  '2y': 'últimos 2 años',
+  '3y': 'últimos 3 años',
+}
+
 export default function DashboardPage() {
   const { carteraId, carteras, isLoading: carteraLoading } = useActiveCartera()
   const activeCartera = carteras.find(c => c.id === carteraId)
+  const [periodo, setPeriodo] = useState<PeriodoSeleccionado>('total')
+  const esTotal = periodo === 'total'
   const { data: resumen, isLoading, isError } = useResumen(carteraId)
   const { data: analisis } = useAnalisis(carteraId)
+  const { data: rentabilidad, isLoading: isLoadingRentabilidad } = useRentabilidad(
+    carteraId,
+    esTotal ? null : periodo,
+  )
+
+  // KPIs: "Total" usa el resumen histórico; cualquier otro periodo usa /rentabilidad.
+  const kpiValorTotal = esTotal ? resumen?.valor_total : rentabilidad?.valor_total
+  const kpiCosteTotal = esTotal ? resumen?.coste_total : rentabilidad?.coste_total
+  const kpiPlusvalia = esTotal ? resumen?.plusvalia_latente : rentabilidad?.plusvalia_total
+  const kpiRentabilidadPct = esTotal ? resumen?.rentabilidad_pct : rentabilidad?.rentabilidad_pct
+  const kpisCargando = esTotal ? isLoading : isLoadingRentabilidad
 
   return (
     <AppShell>
@@ -39,29 +66,31 @@ export default function DashboardPage() {
 
         {resumen && (
           <>
-            {/* KPIs */}
-            <div className="grid grid-cols-4 gap-2.5">
+            <PeriodoSelector value={periodo} onChange={setPeriodo} />
+
+            {/* KPIs — reflejan el periodo elegido arriba */}
+            <div className="grid grid-cols-4 gap-2.5" style={{ opacity: kpisCargando ? 0.5 : 1 }}>
               <KpiCard
                 label="Valor cartera"
-                value={formatEur(resumen.valor_total)}
-                sub={`${resumen.num_posiciones} posiciones`}
+                value={formatEur(kpiValorTotal)}
+                sub={esTotal ? `${resumen.num_posiciones} posiciones` : PERIODO_SUB[periodo]}
               />
               <KpiCard
                 label="Invertido"
-                value={formatEur(resumen.coste_total)}
-                sub="coste total"
+                value={formatEur(kpiCosteTotal)}
+                sub={esTotal ? 'coste total' : 'coste base del periodo'}
               />
               <KpiCard
-                label="Plusvalía latente"
-                value={`${signRent(resumen.plusvalia_latente)}${formatEur(resumen.plusvalia_latente)}`}
-                sub="no realizada"
-                color={resumen.plusvalia_latente >= 0 ? 'positive' : 'negative'}
+                label={esTotal ? 'Plusvalía latente' : 'Plusvalía del periodo'}
+                value={kpiPlusvalia != null ? `${signRent(kpiPlusvalia)}${formatEur(kpiPlusvalia)}` : '—'}
+                sub={esTotal ? 'no realizada' : 'latente + realizada'}
+                color={kpiPlusvalia == null ? 'default' : kpiPlusvalia >= 0 ? 'positive' : 'negative'}
               />
               <KpiCard
                 label="Rentabilidad"
-                value={formatPct(resumen.rentabilidad_pct)}
-                sub="total FIFO"
-                color={resumen.rentabilidad_pct >= 0 ? 'positive' : 'negative'}
+                value={formatPct(kpiRentabilidadPct)}
+                sub={PERIODO_SUB[periodo]}
+                color={kpiRentabilidadPct == null ? 'default' : kpiRentabilidadPct >= 0 ? 'positive' : 'negative'}
               />
             </div>
 
@@ -105,7 +134,10 @@ export default function DashboardPage() {
                       : beneficio < 0   ? 'var(--color-plum)'
                       : 'var(--color-amber)'
 
-                    const valorPos = pos.valor_actual ?? pos.coste_total
+                    const esDivisaExtranjera = !!pos.moneda_nativa && pos.moneda_nativa !== 'EUR'
+                    const precioEur = pos.precio_actual_eur ?? pos.precio_actual
+                    const valorEur = pos.valor_actual_eur ?? pos.valor_actual ?? pos.coste_total
+                    const valorPos = valorEur
                     const peso = resumen.valor_total > 0
                       ? (valorPos / resumen.valor_total) * 100
                       : null
@@ -147,7 +179,12 @@ export default function DashboardPage() {
 
                          {/* Precio actual */}
                          <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
-                           {pos.precio_actual != null ? formatEur(pos.precio_actual) : '—'}
+                           {precioEur != null ? formatEur(precioEur) : '—'}
+                           {esDivisaExtranjera && pos.precio_actual_nativo != null && (
+                             <div className="text-[10px] font-mono" style={{ color: 'var(--color-muted)' }}>
+                               {formatCurrency(pos.precio_actual_nativo, pos.moneda_nativa)}
+                             </div>
+                           )}
                          </td>
 
                          {/* Acciones */}
@@ -157,7 +194,12 @@ export default function DashboardPage() {
 
                          {/* Valor */}
                          <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
-                           {formatEur(pos.valor_actual ?? pos.coste_total)}
+                           {formatEur(valorEur)}
+                           {esDivisaExtranjera && pos.valor_actual_nativo != null && (
+                             <div className="text-[10px] font-mono" style={{ color: 'var(--color-muted)' }}>
+                               {formatCurrency(pos.valor_actual_nativo, pos.moneda_nativa)}
+                             </div>
+                           )}
                          </td>
 
                          {/* Beneficio */}
