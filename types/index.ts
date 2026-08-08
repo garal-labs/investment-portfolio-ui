@@ -104,6 +104,34 @@ export interface AnalisisCartera {
   por_moneda: GrupoAnalisis[]
 }
 
+export type PeriodoRentabilidad = '1m' | '2m' | '3m' | '6m' | '1y' | '2y' | '3y' | 'ytd'
+
+export interface PosicionRentabilidad {
+  instrumento: Instrumento
+  cantidad_actual: number
+  coste_total: number
+  valor_actual?: number
+  plusvalia_latente?: number
+  plusvalia_realizada: number
+  plusvalia_total: number
+  rentabilidad_pct: number
+  moneda_nativa?: string
+}
+
+export interface RentabilidadCartera {
+  periodo: PeriodoRentabilidad
+  fecha_inicio: string
+  fecha_fin: string
+  valor_total: number
+  coste_total: number
+  plusvalia_latente: number
+  plusvalia_realizada: number
+  plusvalia_total: number
+  rentabilidad_pct: number
+  posiciones: PosicionRentabilidad[]
+  tickers_sin_dato: string[]
+}
+
 // ── Formularios ───────────────────────────────────────────────────────────────
 
 export interface MovimientoCreate {
