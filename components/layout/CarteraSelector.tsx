@@ -10,7 +10,7 @@ export function CarteraSelector({ fallbackTitle }: { fallbackTitle?: string }) {
 
   if (isLoading || carteras.length === 0) {
     return (
-      <h1 className="font-serif text-[15px] font-bold" style={{ color: 'var(--color-ink)' }}>
+      <h1 className="font-serif text-[15px] font-bold truncate" style={{ color: 'var(--color-ink)' }}>
         {fallbackTitle || 'Cargando...'}
       </h1>
     )
@@ -19,14 +19,14 @@ export function CarteraSelector({ fallbackTitle }: { fallbackTitle?: string }) {
   const active = carteras.find(c => c.id === carteraId)
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <button
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1.5 font-serif text-[15px] font-bold outline-none cursor-pointer hover:opacity-80 transition-opacity"
+        className="flex items-center gap-1.5 font-serif text-[15px] font-bold outline-none cursor-pointer hover:opacity-80 transition-opacity max-w-full"
         style={{ color: 'var(--color-ink)' }}
       >
-        {active?.nombre || 'Seleccionar cartera'}
-        <ChevronDown size={14} style={{ color: 'var(--color-muted)', marginTop: 2 }} />
+        <span className="truncate">{active?.nombre || 'Seleccionar cartera'}</span>
+        <ChevronDown size={14} style={{ color: 'var(--color-muted)', marginTop: 2 }} className="shrink-0" />
       </button>
 
       {open && (

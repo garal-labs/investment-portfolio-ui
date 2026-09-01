@@ -91,7 +91,7 @@ export function MovimientoForm({ carteraId, onSuccess }: MovimientoFormProps) {
       </div>
 
       {/* Datos del instrumento (autocompletados a partir del ISIN, solo lectura) */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="section-label">Nombre de la empresa</label>
           <input className="input-dark input-autofill" placeholder="—" value={nombreEmpresa} readOnly disabled />
@@ -138,7 +138,7 @@ export function MovimientoForm({ carteraId, onSuccess }: MovimientoFormProps) {
       </div>
 
       {/* Fecha, cantidad, precio */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label className="section-label">Fecha</label>
           <input type="date" className="input-dark" value={fecha} onChange={e => setFecha(e.target.value)} />
@@ -154,7 +154,7 @@ export function MovimientoForm({ carteraId, onSuccess }: MovimientoFormProps) {
       </div>
 
       {/* Opcionales */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="section-label">Comisión (opcional)</label>
           <input type="number" className="input-dark" placeholder="0.00" value={comision} onChange={e => setComision(e.target.value)} min="0" step="any" />

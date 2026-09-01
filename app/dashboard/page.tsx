@@ -69,7 +69,7 @@ export default function DashboardPage() {
             <PeriodoSelector value={periodo} onChange={setPeriodo} />
 
             {/* KPIs — reflejan el periodo elegido arriba */}
-            <div className="grid grid-cols-4 gap-2.5" style={{ opacity: kpisCargando ? 0.5 : 1 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5" style={{ opacity: kpisCargando ? 0.5 : 1 }}>
               <KpiCard
                 label="Valor cartera"
                 value={formatEur(kpiValorTotal)}
@@ -96,6 +96,7 @@ export default function DashboardPage() {
 
             {/* Tabla posiciones */}
             <div className="card overflow-hidden">
+              <div className="overflow-x-auto">
               <table className="w-full border-collapse text-[12px]">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
@@ -232,11 +233,12 @@ export default function DashboardPage() {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
 
             {/* Análisis rápido */}
             {analisis && (analisis.por_sector.length > 0 || analisis.por_pais.length > 0) && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {analisis.por_sector.length > 0 && (
                   <BarrasPeso data={analisis.por_sector} title="Por sector" />
                 )}
