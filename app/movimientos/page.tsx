@@ -55,6 +55,7 @@ export default function MovimientosPage() {
 
         {movs && movs.length > 0 && (
           <div className="card overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full text-[12px] border-collapse">
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
@@ -140,6 +141,7 @@ export default function MovimientosPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
 

@@ -21,12 +21,20 @@ export default function AnalisisPage() {
         )}
         {carteraId !== null && isLoading && <Loading text="Calculando desglose..." />}
         {analisis && (
-          <div className="grid grid-cols-2 gap-4">
-            <DonutChart data={analisis.por_sector} title="Por sector" />
-            <DonutChart data={analisis.por_pais}   title="Por país" />
-            <DonutChart data={analisis.por_tipo}   title="Por tipo de activo" />
-            <DonutChart data={analisis.por_moneda} title="Por moneda" />
-            <div className="col-span-2">
+          <div className="flex flex-wrap gap-4">
+            <div className="basis-full md:basis-[calc(50%-0.5rem)]">
+              <DonutChart data={analisis.por_sector} title="Por sector" />
+            </div>
+            <div className="basis-full md:basis-[calc(50%-0.5rem)]">
+              <DonutChart data={analisis.por_pais} title="Por país" />
+            </div>
+            <div className="basis-full md:basis-[calc(50%-0.5rem)]">
+              <DonutChart data={analisis.por_tipo} title="Por tipo de activo" />
+            </div>
+            <div className="basis-full md:basis-[calc(50%-0.5rem)]">
+              <DonutChart data={analisis.por_moneda} title="Por moneda" />
+            </div>
+            <div className="basis-full">
               <BarrasPeso data={analisis.por_sector} title="Peso por sector (detalle)" />
             </div>
           </div>
