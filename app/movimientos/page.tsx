@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { AppShell } from '@/components/layout/AppShell'
 import { Topbar } from '@/components/layout/Topbar'
 import { MovimientoForm } from '@/components/forms/MovimientoForm'
@@ -7,13 +8,40 @@ import { Loading, EmptyState } from '@/components/ui/Loading'
 import { useMovimientos, useEliminarMovimiento } from '@/hooks/useCartera'
 import { useActiveCartera } from '@/contexts/CarteraContext'
 import { formatEur, formatFecha } from '@/lib/utils'
+import { filterMovimientosPorIsin } from '@/lib/movimientos-filter'
 import { Trash2, Plus, X } from 'lucide-react'
 
+// `useSearchParams` requires a Suspense boundary for static builds (Next.js
+// App Router) — see node_modules/next/dist/docs/.../use-search-params.md
+// ("Missing Suspense boundary with useSearchParams"). The shell renders
+// immediately from the fallback; the isin-aware content streams in once
+// search params are available.
 export default function MovimientosPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppShell>
+          <Topbar title="Movimientos" subtitle="Historial de operaciones" />
+          <div className="flex-1 p-5">
+            <Loading text="Cargando movimientos..." />
+          </div>
+        </AppShell>
+      }
+    >
+      <MovimientosPageContent />
+    </Suspense>
+  )
+}
+
+function MovimientosPageContent() {
   const [showForm, setShowForm] = useState(false)
   const { carteraId, isLoading: carteraLoading } = useActiveCartera()
   const { data: movs, isLoading, isError } = useMovimientos(carteraId)
   const { mutate: eliminar } = useEliminarMovimiento(carteraId)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const isinFiltro = searchParams.get('isin')
+  const movsFiltrados = movs ? filterMovimientosPorIsin(movs, isinFiltro) : movs
 
   return (
     <AppShell>
@@ -28,6 +56,22 @@ export default function MovimientosPage() {
 
         {carteraId !== null && (
         <>
+        {/* Filtro activo por instrumento (deep link desde Posiciones) */}
+        {isinFiltro && (
+          <div
+            className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-lg text-[12px]"
+            style={{ background: '#eef5f2', color: 'var(--color-primary)' }}
+          >
+            <span>Filtrando por {isinFiltro}</span>
+            <button
+              onClick={() => router.push('/movimientos')}
+              className="font-medium underline underline-offset-2 hover:opacity-80"
+            >
+              Ver todos
+            </button>
+          </div>
+        )}
+
         {/* Botón añadir */}
         <div className="flex justify-end">
           <button
@@ -53,7 +97,7 @@ export default function MovimientosPage() {
         {/* Tabla */}
         {isLoading && <Loading text="Cargando movimientos..." />}
 
-        {movs && movs.length > 0 && (
+        {movsFiltrados && movsFiltrados.length > 0 && (
           <div className="card overflow-hidden">
             <div className="overflow-x-auto">
             <table className="w-full text-[12px] border-collapse">
@@ -79,7 +123,7 @@ export default function MovimientosPage() {
                 </tr>
               </thead>
               <tbody>
-                {movs.map(mov => (
+                {movsFiltrados.map(mov => (
                   <tr
                     key={mov.id}
                     style={{ borderBottom: '1px solid var(--color-border-2)' }}
@@ -150,6 +194,9 @@ export default function MovimientosPage() {
         )}
         {!isLoading && !isError && movs?.length === 0 && (
           <EmptyState text="No hay movimientos aún. Añade tu primera operación." />
+        )}
+        {!isLoading && !isError && movs && movs.length > 0 && movsFiltrados?.length === 0 && (
+          <EmptyState text={`No hay movimientos para ${isinFiltro}.`} />
         )}
         </>
         )}
