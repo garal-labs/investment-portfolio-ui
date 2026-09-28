@@ -61,8 +61,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 onClick={onClose}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] transition-colors ${
                   active
-                    ? 'bg-white/[0.16] text-white font-medium'
-                    : 'text-white/70 font-normal hover:bg-white/[0.08] hover:text-white'
+                    ? 'bg-[var(--color-sidebar-active)] text-white font-medium'
+                    : 'text-white/70 font-normal hover:bg-[var(--color-sidebar-hover)] hover:text-white'
                 }`}
               >
                 <Icon size={15} />
