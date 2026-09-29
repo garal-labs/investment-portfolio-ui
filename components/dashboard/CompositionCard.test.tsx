@@ -117,4 +117,12 @@ describe('CompositionCard — rendering', () => {
     fireEvent.mouseEnter(screen.getByTestId('treemap-tile'))
     expect(onHover).toHaveBeenCalledWith('A')
   })
+
+  it('reports the active grouping value via onGrupoChange when it changes', () => {
+    const onGrupoChange = vi.fn()
+    const positions = [pv({ isin: 'A', peso: 1 })]
+    render(<CompositionCard positions={positions} onGrupoChange={onGrupoChange} />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Sector' }))
+    expect(onGrupoChange).toHaveBeenCalledWith('sector')
+  })
 })

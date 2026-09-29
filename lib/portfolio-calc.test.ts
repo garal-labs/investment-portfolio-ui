@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { buildPositionViewModels, groupKeyOf, groupPositions } from './portfolio-calc'
+import {
+  buildPositionViewModels,
+  groupKeyOf,
+  groupPositions,
+  resolveActiveGroupKey,
+  resolveActiveIsins,
+} from './portfolio-calc'
 import type { Posicion } from '@/types'
 
 function posicion(overrides: Partial<Posicion> & { instrumento: Posicion['instrumento'] }): Posicion {
@@ -156,5 +162,49 @@ describe('groupKeyOf — same key space used by groupPositions (hover-linking ma
   it('returns the sector when grouping by sector', () => {
     expect(groupKeyOf(msftVm, 'sector')).toBe('Tecnología')
     expect(groupKeyOf(itxVm, 'sector')).toBe('Consumo')
+  })
+})
+
+describe('resolveActiveGroupKey / resolveActiveIsins — hover cross-highlight matching', () => {
+  const total = 5635 + 3612
+  const [msftVm, itxVm] = buildPositionViewModels([msft, itx], total)
+  const vms = [msftVm, itxVm]
+
+  it('resolves the group key for a hovered isin under the active grupo', () => {
+    expect(resolveActiveGroupKey({ isin: 'US5949181045' }, vms, 'sector')).toBe('Tecnología')
+  })
+
+  it('resolves the group key directly when the hover already carries a groupKey', () => {
+    expect(resolveActiveGroupKey({ groupKey: 'Consumo' }, vms, 'sector')).toBe('Consumo')
+  })
+
+  it('returns null when nothing is hovered', () => {
+    expect(resolveActiveGroupKey({}, vms, 'sector')).toBeNull()
+  })
+
+  it('returns null for an isin that matches no position', () => {
+    expect(resolveActiveGroupKey({ isin: 'UNKNOWN000000' }, vms, 'sector')).toBeNull()
+  })
+
+  it('resolves the single matching isin when hover carries an isin', () => {
+    expect(resolveActiveIsins({ isin: 'US5949181045' }, vms, 'sector')).toEqual(new Set(['US5949181045']))
+  })
+
+  it('resolves every isin sharing the hovered group key', () => {
+    const third = buildPositionViewModels(
+      [posicion({
+        instrumento: { id: 7, isin: 'THIRD00000000', nombre: 'Third', sector: 'Tecnología' },
+        valor_actual_eur: 100,
+      })],
+      100,
+    )[0]
+    const grouped = [msftVm, third]
+    expect(resolveActiveIsins({ groupKey: 'Tecnología' }, grouped, 'sector')).toEqual(
+      new Set(['US5949181045', 'THIRD00000000']),
+    )
+  })
+
+  it('returns null ("no filter, show all") when nothing is hovered', () => {
+    expect(resolveActiveIsins({}, vms, 'sector')).toBeNull()
   })
 })
