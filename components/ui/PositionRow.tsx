@@ -59,7 +59,17 @@ export function PositionRow({ position: p, color, open, onToggle, onHover, activ
         aria-expanded={open}
         className={`grid ${GRID_COLS_MOBILE} ${GRID_COLS_DESKTOP}`}
         style={{
-          all: 'unset',
+          // Reset only the specific <button> defaults we don't want, rather
+          // than `all: unset`: that shorthand also clears grid-template-columns
+          // (set only via the Tailwind classes above, at the highest inline
+          // origin) since nothing after it in this block re-declares it,
+          // collapsing the grid to a single implicit column.
+          border: 'none',
+          background: 'none',
+          font: 'inherit',
+          color: 'inherit',
+          textAlign: 'inherit',
+          margin: 0,
           cursor: 'pointer',
           display: 'grid',
           gap: 16,
