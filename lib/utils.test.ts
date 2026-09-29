@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatEur, formatCurrency, formatPct, formatPeso, TREEMAP_COLORS, treemapColor } from './utils'
+import { formatEur, formatCurrency, formatPct, formatPeso, maskAmount, TREEMAP_COLORS, treemapColor } from './utils'
 
 describe('formatEur — es-ES currency formatting', () => {
   it('formats a positive amount with thousands grouping and comma decimals', () => {
@@ -50,6 +50,20 @@ describe('formatPeso — 1-decimal weight percentage', () => {
   it('returns an em dash placeholder for null/undefined', () => {
     expect(formatPeso(null)).toBe('—')
     expect(formatPeso(undefined)).toBe('—')
+  })
+})
+
+describe('maskAmount — privacy-mode currency placeholder', () => {
+  it('masks a EUR amount without revealing digits', () => {
+    expect(maskAmount('EUR')).toBe('••••• €')
+  })
+
+  it('masks a non-EUR amount using that currency symbol', () => {
+    expect(maskAmount('USD')).toBe('••••• US$')
+  })
+
+  it('defaults to EUR when no currency is given', () => {
+    expect(maskAmount()).toBe('••••• €')
   })
 })
 

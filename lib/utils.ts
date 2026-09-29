@@ -55,6 +55,16 @@ export function formatPeso(value?: number | null): string {
   return `${pct} %`
 }
 
+// Privacy mode placeholder: never derived from the real amount (always
+// formats 0), so it cannot leak magnitude or sign. Extracts just the
+// currency symbol/suffix by stripping digits/separators from the 0-amount
+// formatted string, keeping symbol placement (e.g. "US$" after the number)
+// consistent with formatCurrency.
+export function maskAmount(currency = 'EUR'): string {
+  const symbol = formatCurrency(0, currency, 0).replace(/[\d.,\s]/g, '')
+  return `••••• ${symbol}`
+}
+
 export function formatNum(value?: number | null, decimals = 2): string {
   if (value == null) return '—'
   return new Intl.NumberFormat('es-ES', {
