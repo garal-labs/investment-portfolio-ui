@@ -10,7 +10,7 @@ export function CarteraSelector({ fallbackTitle }: { fallbackTitle?: string }) {
 
   if (isLoading || carteras.length === 0) {
     return (
-      <h1 className="font-serif text-[15px] font-bold truncate" style={{ color: 'var(--color-ink)' }}>
+      <h1 className="font-serif text-[17px] font-bold truncate" style={{ color: 'var(--color-ink)' }}>
         {fallbackTitle || 'Cargando...'}
       </h1>
     )
@@ -22,7 +22,7 @@ export function CarteraSelector({ fallbackTitle }: { fallbackTitle?: string }) {
     <div className="relative min-w-0">
       <button
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1.5 font-serif text-[15px] font-bold outline-none cursor-pointer hover:opacity-80 transition-opacity max-w-full"
+        className="flex items-center gap-1.5 font-serif text-[17px] font-bold outline-none cursor-pointer hover:opacity-80 transition-opacity max-w-full"
         style={{ color: 'var(--color-ink)' }}
       >
         <span className="truncate">{active?.nombre || 'Seleccionar cartera'}</span>
