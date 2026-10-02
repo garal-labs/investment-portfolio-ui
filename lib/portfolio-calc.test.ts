@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildPositionViewModels, groupPositions } from './portfolio-calc'
+import { buildPositionViewModels, groupKeyOf, groupPositions } from './portfolio-calc'
 import type { Posicion } from '@/types'
 
 function posicion(overrides: Partial<Posicion> & { instrumento: Posicion['instrumento'] }): Posicion {
@@ -142,5 +142,19 @@ describe('groupPositions — grouping modes', () => {
 
   it('zero positions returns an empty array, not an error', () => {
     expect(groupPositions([], 'sector')).toEqual([])
+  })
+})
+
+describe('groupKeyOf — same key space used by groupPositions (hover-linking match)', () => {
+  const total = 5635 + 3612
+  const [msftVm, itxVm] = buildPositionViewModels([msft, itx], total)
+
+  it('returns the isin when grouping by posicion', () => {
+    expect(groupKeyOf(msftVm, 'posicion')).toBe('US5949181045')
+  })
+
+  it('returns the sector when grouping by sector', () => {
+    expect(groupKeyOf(msftVm, 'sector')).toBe('Tecnología')
+    expect(groupKeyOf(itxVm, 'sector')).toBe('Consumo')
   })
 })

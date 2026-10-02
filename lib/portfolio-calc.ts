@@ -74,6 +74,13 @@ const KEY_OF: Record<Grupo, (vm: PositionViewModel) => string> = {
   tipo: vm => vm.tipo,
 }
 
+// Exposed so consumers outside this module (e.g. hover-linking between the
+// treemap and the positions table) can compute the same group key a
+// position belongs to, without duplicating the per-grupo field mapping.
+export function groupKeyOf(vm: PositionViewModel, grupo: Grupo): string {
+  return KEY_OF[grupo](vm)
+}
+
 export function groupPositions(vms: PositionViewModel[], grupo: Grupo): CompositionGroup[] {
   const keyOf = KEY_OF[grupo]
   const nameOf = grupo === 'posicion' ? (vm: PositionViewModel) => vm.nombre : keyOf
