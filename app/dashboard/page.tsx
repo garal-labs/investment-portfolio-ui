@@ -5,11 +5,26 @@ import { Topbar } from '@/components/layout/Topbar'
 import { CarteraSelector } from '@/components/layout/CarteraSelector'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { Loading, EmptyState } from '@/components/ui/Loading'
-import { PeriodoSelector, type PeriodoSeleccionado } from '@/components/ui/PeriodoSelector'
+import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { BarrasPeso } from '@/components/charts/BarrasPeso'
 import { useResumen, useAnalisis, useRentabilidad } from '@/hooks/useCartera'
 import { useActiveCartera } from '@/contexts/CarteraContext'
 import { formatEur, formatCurrency, formatPct, signRent } from '@/lib/utils'
+import type { PeriodoRentabilidad } from '@/types'
+
+type PeriodoSeleccionado = 'total' | PeriodoRentabilidad
+
+const PERIODO_OPTIONS: { value: PeriodoSeleccionado; label: string }[] = [
+  { value: 'total', label: 'Total' },
+  { value: '1m', label: '1M' },
+  { value: '2m', label: '2M' },
+  { value: '3m', label: '3M' },
+  { value: '6m', label: '6M' },
+  { value: 'ytd', label: 'YTD' },
+  { value: '1y', label: '1A' },
+  { value: '2y', label: '2A' },
+  { value: '3y', label: '3A' },
+]
 
 function TipoBadge({ tipo }: { tipo?: string }) {
   const t = (tipo ?? 'otro').toLowerCase()
@@ -66,7 +81,7 @@ export default function DashboardPage() {
 
         {resumen && (
           <>
-            <PeriodoSelector value={periodo} onChange={setPeriodo} />
+            <SegmentedControl options={PERIODO_OPTIONS} value={periodo} onChange={setPeriodo} aria-label="Periodo" />
 
             {/* KPIs — reflejan el periodo elegido arriba */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5" style={{ opacity: kpisCargando ? 0.5 : 1 }}>
