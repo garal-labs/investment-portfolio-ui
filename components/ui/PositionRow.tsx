@@ -13,7 +13,12 @@ export function formatCantidadPosicion(cantidad: number, tipo: string): string {
   return `${txt} ${unidad}`
 }
 
-const GRID_COLS = 'minmax(150px,1fr) minmax(100px,140px) minmax(100px,150px) minmax(100px,140px) 14px'
+// <768px shows only Instrumento + Rentabilidad (+ the expand chevron); the
+// rest of the row's fields move into the expanded detail panel, which
+// already renders them all regardless of viewport.
+const GRID_COLS_MOBILE = 'grid-cols-[minmax(150px,1fr)_minmax(90px,120px)_14px]'
+const GRID_COLS_DESKTOP =
+  'md:grid-cols-[minmax(150px,1fr)_minmax(100px,140px)_minmax(100px,150px)_minmax(100px,140px)_14px]'
 
 export interface PositionRowProps {
   position: PositionViewModel
@@ -39,6 +44,7 @@ export function PositionRow({ position: p, color, open, onToggle, onHover, activ
 
   return (
     <div
+      data-testid={`position-row-${p.isin}`}
       style={{
         borderBottom: '1px solid #f5f0eb',
         background: open ? '#fdfbf8' : '#fff',
@@ -51,11 +57,21 @@ export function PositionRow({ position: p, color, open, onToggle, onHover, activ
         onMouseEnter={onHover}
         onClick={onToggle}
         aria-expanded={open}
+        className={`grid ${GRID_COLS_MOBILE} ${GRID_COLS_DESKTOP}`}
         style={{
-          all: 'unset',
+          // Reset only the specific <button> defaults we don't want, rather
+          // than `all: unset`: that shorthand also clears grid-template-columns
+          // (set only via the Tailwind classes above, at the highest inline
+          // origin) since nothing after it in this block re-declares it,
+          // collapsing the grid to a single implicit column.
+          border: 'none',
+          background: 'none',
+          font: 'inherit',
+          color: 'inherit',
+          textAlign: 'inherit',
+          margin: 0,
           cursor: 'pointer',
           display: 'grid',
-          gridTemplateColumns: GRID_COLS,
           gap: 16,
           alignItems: 'center',
           width: '100%',
@@ -75,13 +91,13 @@ export function PositionRow({ position: p, color, open, onToggle, onHover, activ
             <span style={{ fontSize: 12, color: '#a09080' }}>{p.ticker} · {p.tipo}</span>
           </span>
         </span>
-        <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+        <span className="hidden md:flex" style={{ flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
           <span style={{ fontSize: 14, fontWeight: 500 }}>
             {esDivisaExtranjera && p.precioActualNativo != null ? formatCurrency(p.precioActualNativo, p.moneda) : formatEur(p.precioActualEur)}
           </span>
           <span style={{ fontSize: 12, color: '#a09080' }}>{formatCantidadPosicion(p.cantidad, p.tipo)}</span>
         </span>
-        <span style={{ fontSize: 14, fontWeight: 500, textAlign: 'right' }}>{monto(p.valorEur)}</span>
+        <span className="hidden md:inline" style={{ fontSize: 14, fontWeight: 500, textAlign: 'right' }}>{monto(p.valorEur)}</span>
         <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
           <span style={{ fontSize: 14, fontWeight: 700, color: rentColor }}>{formatPct(p.rentabilidadPct)}</span>
           <span style={{ fontSize: 12, color: rentColor, opacity: 0.8 }}>{beneficio(p.plusvalia)}</span>

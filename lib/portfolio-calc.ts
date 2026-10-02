@@ -81,6 +81,42 @@ export function groupKeyOf(vm: PositionViewModel, grupo: Grupo): string {
   return KEY_OF[grupo](vm)
 }
 
+// A hover originating in the treemap already carries the rect's `groupKey`
+// (the same key groupPositions/groupKeyOf produce); a hover originating in
+// the positions table carries the row's `isin`. Both directions resolve
+// through groupKeyOf so neither component needs to know the other's shape.
+export interface HoverTarget {
+  isin?: string
+  groupKey?: string
+}
+
+export function resolveActiveGroupKey(
+  hover: HoverTarget,
+  positions: PositionViewModel[],
+  grupo: Grupo,
+): string | null {
+  if (hover.groupKey != null) return hover.groupKey
+  if (hover.isin != null) {
+    const vm = positions.find(p => p.isin === hover.isin)
+    return vm ? groupKeyOf(vm, grupo) : null
+  }
+  return null
+}
+
+// null means "no filter, show everything" — matches PositionsTable's
+// existing `activeIsins == null` convention.
+export function resolveActiveIsins(
+  hover: HoverTarget,
+  positions: PositionViewModel[],
+  grupo: Grupo,
+): Set<string> | null {
+  if (hover.isin != null) return new Set([hover.isin])
+  if (hover.groupKey != null) {
+    return new Set(positions.filter(p => groupKeyOf(p, grupo) === hover.groupKey).map(p => p.isin))
+  }
+  return null
+}
+
 export function groupPositions(vms: PositionViewModel[], grupo: Grupo): CompositionGroup[] {
   const keyOf = KEY_OF[grupo]
   const nameOf = grupo === 'posicion' ? (vm: PositionViewModel) => vm.nombre : keyOf

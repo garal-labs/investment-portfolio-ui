@@ -1,69 +1,76 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AppShell } from '@/components/layout/AppShell'
 import { Topbar } from '@/components/layout/Topbar'
 import { CarteraSelector } from '@/components/layout/CarteraSelector'
-import { KpiCard } from '@/components/ui/KpiCard'
 import { Loading, EmptyState } from '@/components/ui/Loading'
-import { SegmentedControl } from '@/components/ui/SegmentedControl'
-import { BarrasPeso } from '@/components/charts/BarrasPeso'
-import { useResumen, useAnalisis, useRentabilidad } from '@/hooks/useCartera'
+import { CompositionCard } from '@/components/dashboard/CompositionCard'
+import { PositionsTable } from '@/components/ui/PositionsTable'
+import { ValueBlock, isPeriodoDegradado, type PeriodoSeleccionado } from '@/components/dashboard/ValueBlock'
+import { useResumen, useRentabilidad } from '@/hooks/useCartera'
 import { useActiveCartera } from '@/contexts/CarteraContext'
-import { formatEur, formatCurrency, formatPct, signRent } from '@/lib/utils'
-import type { PeriodoRentabilidad } from '@/types'
+import {
+  buildPositionViewModels,
+  resolveActiveGroupKey,
+  resolveActiveIsins,
+  type Grupo,
+  type HoverTarget,
+} from '@/lib/portfolio-calc'
 
-type PeriodoSeleccionado = 'total' | PeriodoRentabilidad
+// Below 768px the treemap drops to a shorter height so the positions table
+// still fits comfortably on small screens (design handoff's mobile spec).
+const TREEMAP_HEIGHT_MOBILE = 240
+const TREEMAP_HEIGHT_DESKTOP = 340
+const MOBILE_QUERY = '(max-width: 767px)'
 
-const PERIODO_OPTIONS: { value: PeriodoSeleccionado; label: string }[] = [
-  { value: 'total', label: 'Total' },
-  { value: '1m', label: '1M' },
-  { value: '2m', label: '2M' },
-  { value: '3m', label: '3M' },
-  { value: '6m', label: '6M' },
-  { value: 'ytd', label: 'YTD' },
-  { value: '1y', label: '1A' },
-  { value: '2y', label: '2A' },
-  { value: '3y', label: '3A' },
-]
+// Pure media-query switch used only for the Treemap's height prop — every
+// other responsive rule (period control position, table columns) is CSS-only
+// via Tailwind breakpoints on the child components.
+function useTreemapHeight(): number {
+  const [height, setHeight] = useState(TREEMAP_HEIGHT_DESKTOP)
 
-function TipoBadge({ tipo }: { tipo?: string }) {
-  const t = (tipo ?? 'otro').toLowerCase()
-  if (t === 'accion' || t === 'acción') return <span className="badge-accion">Acción</span>
-  if (t === 'etf')                       return <span className="badge-etf">ETF</span>
-  if (t === 'fondo')                     return <span className="badge-fondo">Fondo</span>
-  return <span className="badge-otro">{tipo ?? 'Otro'}</span>
-}
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_QUERY)
+    const update = () => setHeight(mq.matches ? TREEMAP_HEIGHT_MOBILE : TREEMAP_HEIGHT_DESKTOP)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
 
-const PERIODO_SUB: Record<PeriodoSeleccionado, string> = {
-  total: 'total FIFO',
-  '1m': 'último mes',
-  '2m': 'últimos 2 meses',
-  '3m': 'últimos 3 meses',
-  '6m': 'últimos 6 meses',
-  ytd: 'en lo que va de año',
-  '1y': 'último año',
-  '2y': 'últimos 2 años',
-  '3y': 'últimos 3 años',
+  return height
 }
 
 export default function DashboardPage() {
-  const { carteraId, carteras, isLoading: carteraLoading } = useActiveCartera()
-  const activeCartera = carteras.find(c => c.id === carteraId)
+  const { carteraId, isLoading: carteraLoading } = useActiveCartera()
   const [periodo, setPeriodo] = useState<PeriodoSeleccionado>('total')
   const esTotal = periodo === 'total'
   const { data: resumen, isLoading, isError } = useResumen(carteraId)
-  const { data: analisis } = useAnalisis(carteraId)
-  const { data: rentabilidad, isLoading: isLoadingRentabilidad } = useRentabilidad(
-    carteraId,
-    esTotal ? null : periodo,
+  const { data: rentabilidad } = useRentabilidad(carteraId, esTotal ? null : periodo)
+
+  const [grupo, setGrupo] = useState<Grupo>('posicion')
+  const [hover, setHover] = useState<HoverTarget>({})
+  const treemapHeight = useTreemapHeight()
+
+  function handleGrupoChange(next: Grupo) {
+    setGrupo(next)
+    setHover({})
+  }
+
+  const positions = useMemo(
+    () => (resumen ? buildPositionViewModels(resumen.posiciones, resumen.valor_total) : []),
+    [resumen],
   )
 
-  // KPIs: "Total" usa el resumen histórico; cualquier otro periodo usa /rentabilidad.
-  const kpiValorTotal = esTotal ? resumen?.valor_total : rentabilidad?.valor_total
-  const kpiCosteTotal = esTotal ? resumen?.coste_total : rentabilidad?.coste_total
-  const kpiPlusvalia = esTotal ? resumen?.plusvalia_latente : rentabilidad?.plusvalia_total
-  const kpiRentabilidadPct = esTotal ? resumen?.rentabilidad_pct : rentabilidad?.rentabilidad_pct
-  const kpisCargando = esTotal ? isLoading : isLoadingRentabilidad
+  // Only the currently-selected non-total period is ever fetched (see
+  // hooks/useCartera.ts), so this can only flag that one period as degraded
+  // — the other tabs stay enabled until the user actually selects them.
+  const unavailablePeriods = useMemo<PeriodoSeleccionado[]>(() => {
+    if (esTotal || !rentabilidad || !isPeriodoDegradado(rentabilidad)) return []
+    return [periodo]
+  }, [esTotal, periodo, rentabilidad])
+
+  const activeGroupKey = resolveActiveGroupKey(hover, positions, grupo)
+  const activeIsins = resolveActiveIsins(hover, positions, grupo)
 
   return (
     <AppShell>
@@ -72,7 +79,7 @@ export default function DashboardPage() {
         subtitle={resumen ? `${resumen.num_posiciones} posiciones activas` : undefined}
       />
 
-      <div className="flex-1 overflow-y-auto p-5 space-y-4">
+      <div className="flex-1 overflow-y-auto p-5 space-y-6">
         {carteraLoading && <Loading text="Cargando carteras..." />}
         {!carteraLoading && carteraId === null && (
           <EmptyState text="No tenés carteras todavía. La gestión de carteras llega próximamente en Ajustes." />
@@ -81,187 +88,27 @@ export default function DashboardPage() {
 
         {resumen && (
           <>
-            <SegmentedControl options={PERIODO_OPTIONS} value={periodo} onChange={setPeriodo} aria-label="Periodo" />
+            <ValueBlock
+              resumen={resumen}
+              periodo={periodo}
+              onPeriodoChange={setPeriodo}
+              rentabilidad={esTotal ? undefined : rentabilidad}
+              unavailablePeriods={unavailablePeriods}
+            />
 
-            {/* KPIs — reflejan el periodo elegido arriba */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5" style={{ opacity: kpisCargando ? 0.5 : 1 }}>
-              <KpiCard
-                label="Valor cartera"
-                value={formatEur(kpiValorTotal)}
-                sub={esTotal ? `${resumen.num_posiciones} posiciones` : PERIODO_SUB[periodo]}
-              />
-              <KpiCard
-                label="Invertido"
-                value={formatEur(kpiCosteTotal)}
-                sub={esTotal ? 'coste total' : 'coste base del periodo'}
-              />
-              <KpiCard
-                label={esTotal ? 'Plusvalía latente' : 'Plusvalía del periodo'}
-                value={kpiPlusvalia != null ? `${signRent(kpiPlusvalia)}${formatEur(kpiPlusvalia)}` : '—'}
-                sub={esTotal ? 'no realizada' : 'latente + realizada'}
-                color={kpiPlusvalia == null ? 'default' : kpiPlusvalia >= 0 ? 'positive' : 'negative'}
-              />
-              <KpiCard
-                label="Rentabilidad"
-                value={formatPct(kpiRentabilidadPct)}
-                sub={PERIODO_SUB[periodo]}
-                color={kpiRentabilidadPct == null ? 'default' : kpiRentabilidadPct >= 0 ? 'positive' : 'negative'}
-              />
-            </div>
+            <CompositionCard
+              positions={positions}
+              activeKey={activeGroupKey}
+              onHover={key => setHover(key == null ? {} : { groupKey: key })}
+              onGrupoChange={handleGrupoChange}
+              treemapHeight={treemapHeight}
+            />
 
-            {/* Tabla posiciones */}
-            <div className="card overflow-hidden">
-              <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-[12px]">
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                     {['Instrumento', 'Tipo', 'Sector', 'P. medio', 'P. actual', 'Acciones', 'Valor', 'Beneficio', 'Peso', 'Rent.'].map(h => (
-                      <th
-                        key={h}
-                        style={{
-                          padding: '10px 14px',
-                          fontSize: 9,
-                          fontWeight: 700,
-                          letterSpacing: '0.10em',
-                          textTransform: 'uppercase',
-                          color: 'var(--color-muted)',
-                          textAlign: ['P. medio', 'P. actual', 'Acciones', 'Valor', 'Beneficio', 'Peso', 'Rent.'].includes(h) ? 'right' : 'left',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {resumen.posiciones.map(pos => {
-                    const rent = pos.rentabilidad_pct
-                    const rentColor =
-                      rent == null ? 'var(--color-muted)'
-                      : rent > 0   ? 'var(--color-primary)'
-                      : rent < 0   ? 'var(--color-plum)'
-                      : 'var(--color-amber)'
-
-                    const beneficio = pos.plusvalia_latente
-                    const beneficioColor =
-                      beneficio == null ? 'var(--color-muted)'
-                      : beneficio > 0   ? 'var(--color-primary)'
-                      : beneficio < 0   ? 'var(--color-plum)'
-                      : 'var(--color-amber)'
-
-                    const esDivisaExtranjera = !!pos.moneda_nativa && pos.moneda_nativa !== 'EUR'
-                    const precioEur = pos.precio_actual_eur ?? pos.precio_actual
-                    const valorEur = pos.valor_actual_eur ?? pos.valor_actual ?? pos.coste_total
-                    const valorPos = valorEur
-                    const peso = resumen.valor_total > 0
-                      ? (valorPos / resumen.valor_total) * 100
-                      : null
-
-                    return (
-                      <tr
-                        key={pos.instrumento.isin}
-                        style={{ borderBottom: '1px solid var(--color-border-2)' }}
-                      >
-                        {/* Instrumento */}
-                        <td className="px-3.5 py-[9px]">
-                          <div className="font-medium" style={{ color: 'var(--color-ink)' }}>
-                            {pos.instrumento.nombre || pos.instrumento.isin}
-                          </div>
-                          <div
-                            className="text-[10px] font-mono"
-                            style={{ color: 'var(--color-muted)' }}
-                          >
-                            {pos.instrumento.isin}
-                          </div>
-                        </td>
-
-                        {/* Tipo */}
-                        <td className="px-2 py-[9px]">
-                          <TipoBadge tipo={pos.instrumento.tipo} />
-                        </td>
-
-                        {/* Sector */}
-                        <td className="px-2 py-[9px]">
-                          {pos.instrumento.sector && (
-                            <span className="badge-sector">{pos.instrumento.sector}</span>
-                          )}
-                        </td>
-
-                        {/* Precio medio */}
-                         <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
-                           {formatEur(pos.precio_medio)}
-                         </td>
-
-                         {/* Precio actual */}
-                         <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
-                           {precioEur != null ? formatEur(precioEur) : '—'}
-                           {esDivisaExtranjera && pos.precio_actual_nativo != null && (
-                             <div className="text-[10px] font-mono" style={{ color: 'var(--color-muted)' }}>
-                               {formatCurrency(pos.precio_actual_nativo, pos.moneda_nativa)}
-                             </div>
-                           )}
-                         </td>
-
-                         {/* Acciones */}
-                         <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
-                           {pos.cantidad_actual}
-                         </td>
-
-                         {/* Valor */}
-                         <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
-                           {formatEur(valorEur)}
-                           {esDivisaExtranjera && pos.valor_actual_nativo != null && (
-                             <div className="text-[10px] font-mono" style={{ color: 'var(--color-muted)' }}>
-                               {formatCurrency(pos.valor_actual_nativo, pos.moneda_nativa)}
-                             </div>
-                           )}
-                         </td>
-
-                         {/* Beneficio */}
-                         <td className="px-3.5 py-[9px] text-right font-medium" style={{ color: beneficioColor }}>
-                           {beneficio != null ? `${signRent(beneficio)}${formatEur(beneficio)}` : '—'}
-                         </td>
-
-                         {/* Peso en cartera */}
-                         <td className="px-3.5 py-[9px] text-right" style={{ color: 'var(--color-ink-2)' }}>
-                           {peso != null ? `${peso.toFixed(1)}%` : '—'}
-                         </td>
-
-                         {/* Rentabilidad */}
-                         <td
-                          className="px-3.5 py-[9px] text-right font-medium"
-                          style={{ color: rentColor }}
-                        >
-                          {rent != null ? formatPct(rent) : '—'}
-                        </td>
-                      </tr>
-                    )
-                  })}
-
-                  {resumen.posiciones.length === 0 && (
-                    <tr>
-                      <td colSpan={10} className="px-4 py-6 text-center font-lora italic text-sm" style={{ color: 'var(--color-muted)' }}>
-                        No hay posiciones aún. Añade tu primer movimiento.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-              </div>
-            </div>
-
-            {/* Análisis rápido */}
-            {analisis && (analisis.por_sector.length > 0 || analisis.por_pais.length > 0) && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {analisis.por_sector.length > 0 && (
-                  <BarrasPeso data={analisis.por_sector} title="Por sector" />
-                )}
-                {analisis.por_pais.length > 0 && (
-                  <BarrasPeso data={analisis.por_pais} title="Por país" />
-                )}
-              </div>
-            )}
+            <PositionsTable
+              positions={positions}
+              activeIsins={activeIsins}
+              onHoverIsin={isin => setHover(isin == null ? {} : { isin })}
+            />
           </>
         )}
 

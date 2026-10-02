@@ -27,12 +27,28 @@ interface CompositionCardProps {
   positions: PositionViewModel[]
   activeKey?: string | null
   onHover?: (key: string | null) => void
+  // Grupo stays owned internally (see apply-progress deviation note), but is
+  // reported upward so a parent can know which key-space `activeKey` and
+  // hover events are in (needed for cross-highlighting with other panels).
+  onGrupoChange?: (grupo: Grupo) => void
+  treemapHeight?: number
 }
 
-export function CompositionCard({ positions, activeKey = null, onHover }: CompositionCardProps) {
+export function CompositionCard({
+  positions,
+  activeKey = null,
+  onHover,
+  onGrupoChange,
+  treemapHeight,
+}: CompositionCardProps) {
   const [grupo, setGrupo] = useState<Grupo>('posicion')
   const groups = groupPositions(positions, grupo)
   const subtitle = buildCompositionSubtitle(groups, grupo)
+
+  function handleGrupoChange(next: Grupo) {
+    setGrupo(next)
+    onGrupoChange?.(next)
+  }
 
   return (
     <section
@@ -64,11 +80,11 @@ export function CompositionCard({ positions, activeKey = null, onHover }: Compos
         <SegmentedControl
           options={GRUPO_OPTIONS}
           value={grupo}
-          onChange={setGrupo}
+          onChange={handleGrupoChange}
           aria-label="Agrupar por"
         />
       </div>
-      <Treemap groups={groups} activeKey={activeKey} onHover={onHover} />
+      <Treemap groups={groups} activeKey={activeKey} onHover={onHover} height={treemapHeight} />
     </section>
   )
 }
