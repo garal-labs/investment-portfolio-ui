@@ -10,6 +10,7 @@ import { ValueBlock, isPeriodoDegradado, type PeriodoSeleccionado } from '@/comp
 import { useResumen, useRentabilidad } from '@/hooks/useCartera'
 import { useActiveCartera } from '@/contexts/CarteraContext'
 import {
+  applyPeriodoRentabilidad,
   buildPositionViewModels,
   resolveActiveGroupKey,
   resolveActiveIsins,
@@ -56,10 +57,11 @@ export default function DashboardPage() {
     setHover({})
   }
 
-  const positions = useMemo(
-    () => (resumen ? buildPositionViewModels(resumen.posiciones, resumen.valor_total) : []),
-    [resumen],
-  )
+  const positions = useMemo(() => {
+    if (!resumen) return []
+    const base = buildPositionViewModels(resumen.posiciones, resumen.valor_total)
+    return applyPeriodoRentabilidad(base, esTotal ? undefined : rentabilidad)
+  }, [resumen, rentabilidad, esTotal])
 
   // Only the currently-selected non-total period is ever fetched (see
   // hooks/useCartera.ts), so this can only flag that one period as degraded

@@ -1,5 +1,6 @@
 'use client'
 import { SegmentedControl, type SegmentedControlOption } from '@/components/ui/SegmentedControl'
+import { isPeriodoDegradado } from '@/lib/portfolio-calc'
 import { usePreferences } from '@/lib/preferences'
 import { formatEur, formatPct, maskAmount, signRent } from '@/lib/utils'
 import type { RentabilidadCartera } from '@/types'
@@ -53,12 +54,7 @@ export function computeHero(
   return { plus: rentabilidad.plusvalia_total, pct: rentabilidad.rentabilidad_pct, sub: PERIODO_DESCRIPCION[periodo] }
 }
 
-// A period is degraded when garal-screener could not price any of the
-// positions it needed for that window (tickers_sin_dato covers every
-// position) — showing a number in that case would be wrong, not just stale.
-export function isPeriodoDegradado(rentabilidad: Pick<RentabilidadCartera, 'posiciones' | 'tickers_sin_dato'>): boolean {
-  return rentabilidad.posiciones.length > 0 && rentabilidad.tickers_sin_dato.length >= rentabilidad.posiciones.length
-}
+export { isPeriodoDegradado }
 
 export interface ValueBlockProps {
   resumen: HeroResumen & { plusvalia_realizada: number }

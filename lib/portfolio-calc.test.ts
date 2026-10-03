@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
+  applyPeriodoRentabilidad,
   buildPositionViewModels,
   groupKeyOf,
   groupPositions,
   resolveActiveGroupKey,
   resolveActiveIsins,
 } from './portfolio-calc'
-import type { Posicion } from '@/types'
+import type { Posicion, RentabilidadCartera } from '@/types'
 
 function posicion(overrides: Partial<Posicion> & { instrumento: Posicion['instrumento'] }): Posicion {
   return {
@@ -206,5 +207,36 @@ describe('resolveActiveGroupKey / resolveActiveIsins — hover cross-highlight m
 
   it('returns null ("no filter, show all") when nothing is hovered', () => {
     expect(resolveActiveIsins({}, vms, 'sector')).toBeNull()
+  })
+})
+
+describe('applyPeriodoRentabilidad', () => {
+  const base = buildPositionViewModels([msft, itx], 9247)
+
+  it('returns positions untouched when there is no period data', () => {
+    expect(applyPeriodoRentabilidad(base, undefined)).toBe(base)
+  })
+
+  it('overlays period gain and percentage by ISIN, keeping value and weight', () => {
+    const rent = {
+      posiciones: [
+        { instrumento: msft.instrumento, plusvalia_total: 120, rentabilidad_pct: 2.2 },
+      ],
+      tickers_sin_dato: [],
+    } as unknown as RentabilidadCartera
+    const [m, i] = applyPeriodoRentabilidad(base, rent)
+    expect(m.plusvalia).toBe(120)
+    expect(m.rentabilidadPct).toBe(2.2)
+    expect(m.valorEur).toBe(base[0].valorEur)
+    expect(m.peso).toBe(base[0].peso)
+    expect(i).toEqual(base[1])
+  })
+
+  it('ignores a degraded period (every ticker without data)', () => {
+    const rent = {
+      posiciones: [{ instrumento: msft.instrumento, plusvalia_total: 0, rentabilidad_pct: 0 }],
+      tickers_sin_dato: ['MSFT'],
+    } as unknown as RentabilidadCartera
+    expect(applyPeriodoRentabilidad(base, rent)).toBe(base)
   })
 })
