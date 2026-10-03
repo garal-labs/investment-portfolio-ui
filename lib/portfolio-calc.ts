@@ -1,7 +1,7 @@
 // Derived-data calculations (peso/coste/plusvalía/rentabilidad %) as pure
 // functions, single source of truth consumed by both the composition
 // treemap and the positions table (design's "avoid drift" rationale).
-import type { Posicion } from '@/types'
+import type { Posicion, RentabilidadCartera } from '@/types'
 
 const SIN_DATOS = '—'
 
@@ -142,4 +142,27 @@ export function groupPositions(vms: PositionViewModel[], grupo: Grupo): Composit
   }
 
   return [...groups.values()].sort((a, b) => b.valor - a.valor)
+}
+
+// A period is degraded when garal-screener could not price any of the
+// positions it needed for that window (tickers_sin_dato covers every
+// position) — showing a number in that case would be wrong, not just stale.
+export function isPeriodoDegradado(rentabilidad: Pick<RentabilidadCartera, 'posiciones' | 'tickers_sin_dato'>): boolean {
+  return rentabilidad.posiciones.length > 0 && rentabilidad.tickers_sin_dato.length >= rentabilidad.posiciones.length
+}
+
+// Overlays the period-scoped gain and return onto each position (matched by
+// ISIN). Value, cost and weight describe today's holding, so they stay as is.
+export function applyPeriodoRentabilidad(
+  positions: PositionViewModel[],
+  rentabilidad?: RentabilidadCartera,
+): PositionViewModel[] {
+  if (!rentabilidad || isPeriodoDegradado(rentabilidad)) return positions
+  const byIsin = new Map(rentabilidad.posiciones.map(p => [p.instrumento.isin, p]))
+  return positions.map(vm => {
+    const periodo = byIsin.get(vm.isin)
+    return periodo
+      ? { ...vm, plusvalia: periodo.plusvalia_total, rentabilidadPct: periodo.rentabilidad_pct }
+      : vm
+  })
 }
