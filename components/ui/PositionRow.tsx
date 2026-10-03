@@ -33,7 +33,8 @@ export function PositionRow({ position: p, color, open, onToggle, onHover, activ
   const { privacy, density } = usePreferences()
   const esDivisaExtranjera = p.moneda !== 'EUR'
   const vPad = density === 'compact' ? 10 : 16
-  const rentColor = p.rentabilidadPct >= 0 ? '#2D6A5A' : '#8a3a6a'
+  // Color follows the displayed (rounded) sign, so "+0,00 %" is never plum.
+  const rentColor = formatPct(p.rentabilidadPct).startsWith('−') ? '#8a3a6a' : '#2D6A5A'
 
   function monto(value: number) {
     return privacy ? maskAmount('EUR') : formatEur(value)
@@ -130,7 +131,7 @@ export function PositionRow({ position: p, color, open, onToggle, onHover, activ
             <Detalle etiqueta="Moneda" valor={p.moneda} />
             <Detalle etiqueta="ISIN" valor={p.isin} />
           </div>
-          <Link href={`/movimientos?isin=${p.isin}`} style={{ fontSize: 13, fontWeight: 500 }}>
+          <Link href={`/movimientos?isin=${encodeURIComponent(p.isin)}`} style={{ fontSize: 13, fontWeight: 500 }}>
             Ver movimientos de {p.ticker} →
           </Link>
         </div>
