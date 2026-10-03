@@ -79,3 +79,20 @@ describe('SegmentedControl — keyboard navigation', () => {
     expect(onChange).toHaveBeenCalledWith('total')
   })
 })
+
+describe('SegmentedControl — roving tabindex', () => {
+  it('gives tabIndex=0 to the selected tab and -1 to the others when it is enabled', () => {
+    render(<SegmentedControl options={OPTIONS} value="1m" onChange={vi.fn()} />)
+
+    expect(screen.getByRole('tab', { name: '1M' })).toHaveAttribute('tabindex', '0')
+    expect(screen.getByRole('tab', { name: 'Total' })).toHaveAttribute('tabindex', '-1')
+  })
+
+  it('moves the tab stop to the first enabled tab when the selected tab is disabled', () => {
+    render(<SegmentedControl options={OPTIONS} value="3m" onChange={vi.fn()} />)
+
+    expect(screen.getByRole('tab', { name: 'Total' })).toHaveAttribute('tabindex', '0')
+    expect(screen.getByRole('tab', { name: '1M' })).toHaveAttribute('tabindex', '-1')
+    expect(screen.getByRole('tab', { name: '3M' })).toHaveAttribute('tabindex', '-1')
+  })
+})
