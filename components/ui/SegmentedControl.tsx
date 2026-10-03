@@ -50,6 +50,15 @@ export function SegmentedControl<T extends string>({
     }
   }
 
+  // Roving tabindex: the tab stop is the selected tab, unless it is disabled
+  // (unfocusable) — then the first enabled tab, so keyboard users can always
+  // reach the tablist.
+  const selectedIndex = options.findIndex(o => o.value === value)
+  const tabStopIndex =
+    selectedIndex !== -1 && !options[selectedIndex].disabled
+      ? selectedIndex
+      : options.findIndex(o => !o.disabled)
+
   return (
     <div
       role="tablist"
@@ -66,7 +75,7 @@ export function SegmentedControl<T extends string>({
             role="tab"
             aria-selected={active}
             disabled={o.disabled}
-            tabIndex={active ? 0 : -1}
+            tabIndex={index === tabStopIndex ? 0 : -1}
             onClick={() => !o.disabled && onChange(o.value)}
             onKeyDown={e => handleKeyDown(e, index)}
             className="px-3 py-1.5 text-[12px] font-medium rounded-[7px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"

@@ -91,7 +91,21 @@ describe('PositionRow — dual currency', () => {
   })
 })
 
+describe('PositionRow — sign after rounding', () => {
+  it('uses the positive color and no minus for a sub-rounding negative return', () => {
+    renderRow({ rentabilidadPct: -0.001, plusvalia: -0.001 })
+    const pct = screen.getByText('+0,00 %')
+    expect(pct).toHaveStyle({ color: '#2D6A5A' })
+  })
+})
+
 describe('PositionRow — movimientos link', () => {
+  it('url-encodes the isin in the href', () => {
+    renderRow({ isin: 'AB C&1' }, { open: true })
+    const link = screen.getByRole('link', { name: 'Ver movimientos de MSFT →' })
+    expect(link).toHaveAttribute('href', '/movimientos?isin=AB%20C%261')
+  })
+
   it('renders the exact link text and href for the ticker', () => {
     renderRow({}, { open: true })
     const link = screen.getByRole('link', { name: 'Ver movimientos de MSFT →' })

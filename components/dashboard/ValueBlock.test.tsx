@@ -89,6 +89,19 @@ describe('ValueBlock — negative gain styling', () => {
   })
 })
 
+describe('ValueBlock — degraded selected period', () => {
+  it('hides plus/pct/sub from rentabilidad when the selected period is degraded', () => {
+    renderBlock({
+      periodo: '1m',
+      rentabilidad: rentabilidad({ posiciones: [{} as never], tickers_sin_dato: ['MSFT'] }),
+      unavailablePeriods: ['1m'],
+    })
+    expect(screen.queryByText('+612,40 €')).not.toBeInTheDocument()
+    expect(screen.queryByText('último mes')).not.toBeInTheDocument()
+    expect(screen.queryByText(/1,12/)).not.toBeInTheDocument()
+  })
+})
+
 describe('ValueBlock — degraded period tab', () => {
   it('disables a period with unavailable historical value while Total stays enabled', () => {
     renderBlock({ unavailablePeriods: ['3m'] })

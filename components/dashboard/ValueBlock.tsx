@@ -48,7 +48,8 @@ export function computeHero(
     const pct = resumen.coste_total > 0 ? (resumen.valor_total / resumen.coste_total - 1) * 100 : 0
     return { plus, pct, sub: PERIODO_DESCRIPCION.total }
   }
-  if (!rentabilidad) return null
+  // Degraded: no trustworthy figures, so show the same empty state as "no data".
+  if (!rentabilidad || isPeriodoDegradado(rentabilidad)) return null
   return { plus: rentabilidad.plusvalia_total, pct: rentabilidad.rentabilidad_pct, sub: PERIODO_DESCRIPCION[periodo] }
 }
 
