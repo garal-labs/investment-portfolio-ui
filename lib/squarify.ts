@@ -32,6 +32,18 @@ export function squarify<T extends SquarifyItem>(
   }
 
   const total = items.reduce((s, i) => s + i.v, 0)
+  if (!(w > 0 && h > 0)) {
+    // Degenerate container (e.g. earlier rows consumed all the space).
+    items.forEach(i => out.push({ ...i, x, y, w: Math.max(w, 0), h: Math.max(h, 0) }))
+    return out
+  }
+  if (!(total > 0)) {
+    // Nothing to weigh by (all zero, or only zero-valued items remain):
+    // split the space equally instead of dividing by zero.
+    const equal = squarify(items.map(i => ({ ...i, v: 1 })), x, y, w, h)
+    equal.forEach((r, idx) => out.push({ ...r, v: items[idx].v } as Rect<T>))
+    return out
+  }
   const scale = (w * h) / total
   const short = Math.min(w, h)
 

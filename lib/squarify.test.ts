@@ -109,3 +109,33 @@ describe('tileContent — visibility and sizing thresholds', () => {
     expect(tileContent(141, 100).pctSize).toBe('22px')
   })
 })
+
+describe('squarify — zero totals', () => {
+  const finite = (r: { x: number; y: number; w: number; h: number }) =>
+    [r.x, r.y, r.w, r.h].every(Number.isFinite)
+
+  it('never emits NaN/Infinity when all items are zero', () => {
+    const items: SquarifyItem[] = [
+      { key: 'a', v: 0 },
+      { key: 'b', v: 0 },
+      { key: 'c', v: 0 },
+    ]
+    const rects = squarify(items, 0, 0, 200, 100)
+    expect(rects).toHaveLength(3)
+    expect(rects.every(finite)).toBe(true)
+    expect(rects.map(r => r.key)).toEqual(['a', 'b', 'c'])
+    expect(rects.every(r => r.v === 0)).toBe(true)
+  })
+
+  it('never emits NaN/Infinity with trailing zero items', () => {
+    const items: SquarifyItem[] = [
+      { key: 'a', v: 50 },
+      { key: 'b', v: 30 },
+      { key: 'c', v: 0 },
+      { key: 'd', v: 0 },
+    ]
+    const rects = squarify(items, 0, 0, 200, 100)
+    expect(rects).toHaveLength(4)
+    expect(rects.every(finite)).toBe(true)
+  })
+})

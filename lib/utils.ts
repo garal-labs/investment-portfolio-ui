@@ -5,6 +5,9 @@
 // requires the true minus sign U+2212. Swap it after formatting rather than
 // relying on locale data that may vary across environments.
 function withUnicodeMinus(formatted: string): string {
+  // Decide the sign after rounding: a value that rounds to zero (e.g. -0.001
+  // at 2 decimals) must not render as "−0,00".
+  if (!/[1-9]/.test(formatted)) return formatted.replace('-', '')
   return formatted.replace('-', '−')
 }
 
@@ -36,11 +39,12 @@ export function formatCurrency(value?: number | null, currency = 'EUR', decimals
 
 export function formatPct(value?: number | null): string {
   if (value == null) return '—'
-  const sign = value >= 0 ? '+' : '−'
   const magnitude = new Intl.NumberFormat('es-ES', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(Math.abs(value))
+  // Sign follows the rounded magnitude: zero keeps the "+" convention.
+  const sign = value < 0 && /[1-9]/.test(magnitude) ? '−' : '+'
   return `${sign}${magnitude} %`
 }
 

@@ -83,3 +83,27 @@ describe('TREEMAP_COLORS / treemapColor — 9-entry palette with wraparound', ()
     expect(treemapColor(0)).not.toBe(treemapColor(1))
   })
 })
+
+describe('sign after rounding', () => {
+  it('formatPct shows a positive-style zero for sub-rounding negatives', () => {
+    expect(formatPct(-0.001)).toBe('+0,00 %')
+    expect(formatPct(-0)).toBe('+0,00 %')
+    expect(formatPct(0)).toBe('+0,00 %')
+  })
+
+  it('formatPct keeps the minus once the rounded value is non-zero', () => {
+    expect(formatPct(-0.005)).toBe('−0,01 %')
+    expect(formatPct(-12.5)).toBe('−12,50 %')
+  })
+
+  it('formatEur / formatCurrency never render a minus on a rounded zero', () => {
+    expect(formatEur(-0.001)).toMatch(/^0,00\s€$/)
+    expect(formatEur(-0.004, 2)).toMatch(/^0,00\s€$/)
+    expect(formatEur(-0.4, 0)).toMatch(/^0\s€$/)
+    expect(formatCurrency(-0.001, 'USD')).not.toContain('−')
+  })
+
+  it('formatEur keeps the minus for non-zero rounded values', () => {
+    expect(formatEur(-0.01)).toMatch(/^−0,01\s€$/)
+  })
+})
