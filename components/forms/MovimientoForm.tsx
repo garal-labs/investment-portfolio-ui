@@ -53,8 +53,8 @@ export function MovimientoForm({ carteraId, onSuccess }: MovimientoFormProps) {
     // corrompiendo silenciosamente coste_total/precio_medio y por tanto la
     // rentabilidad de la posición (bug real detectado en QA: Canon Inc. en
     // JPY mostraba una ganancia real del +43% como una pérdida del -99%).
-    if (moneda && moneda !== 'EUR' && !tipoCambio) {
-      setError('Tipo de cambio obligatorio para instrumentos en divisa extranjera')
+    if (moneda && moneda !== 'EUR' && !(Number.isFinite(parseFloat(tipoCambio)) && parseFloat(tipoCambio) > 0)) {
+      setError('Tipo de cambio obligatorio (mayor que 0) para instrumentos en divisa extranjera')
       return
     }
     try {

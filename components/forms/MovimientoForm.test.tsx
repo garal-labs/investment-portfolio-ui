@@ -64,6 +64,17 @@ describe('MovimientoForm — tipo de cambio requerido en divisa extranjera', () 
     expect(crearMovimientoMock).not.toHaveBeenCalled()
   })
 
+  it.each(['0', '-1.5'])('rejects tipo_cambio=%s for a foreign-currency instrument', async value => {
+    render(<MovimientoForm carteraId={1} />)
+    await fillCommonFields('JP3242800005')
+    fireEvent.change(screen.getByPlaceholderText('1.08 (USD/EUR)'), { target: { value } })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar movimiento' }))
+
+    expect(await screen.findByText(/tipo de cambio/i)).toBeInTheDocument()
+    expect(crearMovimientoMock).not.toHaveBeenCalled()
+  })
+
   it('submits with tipo_cambio when provided for a foreign-currency instrument', async () => {
     render(<MovimientoForm carteraId={1} />)
     await fillCommonFields('JP3242800005')
