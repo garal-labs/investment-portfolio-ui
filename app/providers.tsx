@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { CarteraProvider } from '@/contexts/CarteraContext'
+import { PreferencesProvider } from '@/lib/preferences'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -22,7 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CarteraProvider>
-          {children}
+          <PreferencesProvider>
+            {children}
+          </PreferencesProvider>
         </CarteraProvider>
       </AuthProvider>
     </QueryClientProvider>

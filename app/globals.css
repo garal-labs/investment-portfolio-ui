@@ -11,7 +11,8 @@
 
   /* Sidebar */
   --color-sidebar:   #2D6A5A;   /* verde sólido */
-  --color-sidebar-active: rgba(255,255,255,.18);
+  --color-sidebar-active: rgba(255,255,255,.16);
+  --color-sidebar-hover:  rgba(255,255,255,.08);
   --color-sidebar-border: rgba(255,255,255,.15);
 
   /* Texto */

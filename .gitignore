@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local tooling / design process artifacts
+.playwright-mcp/
+design_handoff_tu_cartera/

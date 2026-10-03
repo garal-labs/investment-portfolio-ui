@@ -41,7 +41,7 @@ export function Topbar({ title, subtitle }: TopbarProps) {
 
   return (
     <header
-      className="h-14 px-5 flex items-center justify-between gap-2 shrink-0"
+      className="px-5 lg:px-10 py-3.5 flex items-center justify-between gap-2 shrink-0"
       style={{
         background: 'var(--color-surface)',
         borderBottom: '1px solid var(--color-border)',
@@ -50,7 +50,7 @@ export function Topbar({ title, subtitle }: TopbarProps) {
       <div className="flex items-center gap-2 min-w-0">
         <button
           onClick={toggle}
-          className="p-1 -ml-1 transition-colors md:hidden shrink-0"
+          className="p-1 -ml-1 transition-colors lg:hidden shrink-0"
           style={{ color: 'var(--color-muted)' }}
           title="Abrir menú"
         >
@@ -58,14 +58,14 @@ export function Topbar({ title, subtitle }: TopbarProps) {
         </button>
         <div className="min-w-0">
           {typeof title === 'string' ? (
-            <h1 className="font-serif text-[15px] font-bold truncate" style={{ color: 'var(--color-ink)' }}>
+            <h1 className="font-serif text-[17px] font-bold truncate" style={{ color: 'var(--color-ink)' }}>
               {title}
             </h1>
           ) : (
             title
           )}
           {subtitle && (
-            <p className="font-lora italic text-[11px] mt-px truncate" style={{ color: 'var(--color-muted)' }}>
+            <p className="text-[12px] mt-px truncate" style={{ color: 'var(--color-muted)' }}>
               {subtitle}
             </p>
           )}
@@ -87,7 +87,7 @@ export function Topbar({ title, subtitle }: TopbarProps) {
         )}
         <button
           onClick={handleRefresh}
-          className="p-1 transition-colors"
+          className="p-1.5 rounded-md transition-colors hover:bg-[rgba(45,106,90,0.08)] hover:text-[var(--color-primary)]"
           style={{ color: 'var(--color-muted)' }}
           title="Actualizar precios"
         >
@@ -95,7 +95,7 @@ export function Topbar({ title, subtitle }: TopbarProps) {
         </button>
         <button
           onClick={() => logout()}
-          className="p-1 transition-colors"
+          className="p-1.5 rounded-md transition-colors hover:bg-[rgba(138,58,106,0.08)] hover:text-[var(--color-plum)]"
           style={{ color: 'var(--color-muted)' }}
           title="Cerrar sesión"
         >

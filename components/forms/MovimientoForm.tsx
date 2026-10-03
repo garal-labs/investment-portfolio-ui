@@ -48,6 +48,15 @@ export function MovimientoForm({ carteraId, onSuccess }: MovimientoFormProps) {
       setError('ISIN, cantidad y precio son obligatorios')
       return
     }
+    // Sin tipo_cambio, el backend asume 1.0 (garal-screener's
+    // calculos._tipo_cambio) y trata el precio nativo como si ya fuera EUR,
+    // corrompiendo silenciosamente coste_total/precio_medio y por tanto la
+    // rentabilidad de la posición (bug real detectado en QA: Canon Inc. en
+    // JPY mostraba una ganancia real del +43% como una pérdida del -99%).
+    if (moneda && moneda !== 'EUR' && !(Number.isFinite(parseFloat(tipoCambio)) && parseFloat(tipoCambio) > 0)) {
+      setError('Tipo de cambio obligatorio (mayor que 0) para instrumentos en divisa extranjera')
+      return
+    }
     try {
       await crearMovimiento({
         cartera_id: carteraId,
@@ -160,7 +169,9 @@ export function MovimientoForm({ carteraId, onSuccess }: MovimientoFormProps) {
           <input type="number" className="input-dark" placeholder="0.00" value={comision} onChange={e => setComision(e.target.value)} min="0" step="any" />
         </div>
         <div>
-          <label className="section-label">Tipo cambio (opcional)</label>
+          <label className="section-label">
+            Tipo cambio {moneda && moneda !== 'EUR' ? '(obligatorio, divisa extranjera)' : '(opcional)'}
+          </label>
           <input type="number" className="input-dark" placeholder="1.08 (USD/EUR)" value={tipoCambio} onChange={e => setTipoCambio(e.target.value)} min="0" step="any" />
         </div>
       </div>
