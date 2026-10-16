@@ -7,7 +7,7 @@ import type { NextRequest } from 'next/server'
 // `tasks.md` 1.3 says "Create middleware.ts"; this file is the Next 16
 // equivalent and supersedes that filename per the deprecation notice.
 
-const PROTECTED_PATHS = ['/dashboard', '/movimientos', '/analisis', '/ajustes']
+const PROTECTED_PATHS = ['/dashboard', '/movimientos', '/markowitz', '/ajustes']
 
 // Confirmed against the backend design (sdd/user-authentication/design,
 // garal-screener): httpOnly/Secure/SameSite=Lax cookie named `access_token`.
@@ -37,5 +37,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/movimientos/:path*', '/analisis/:path*', '/ajustes/:path*'],
+  matcher: ['/dashboard/:path*', '/movimientos/:path*', '/markowitz/:path*', '/ajustes/:path*'],
 }

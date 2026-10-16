@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
   // Optimiza el bundle para despliegue en Vercel / contenedores
   output: 'standalone',
 
+  // The Markowitz page used to live at /analisis; keep old links working.
+  async redirects() {
+    return [
+      { source: '/analisis', destination: '/markowitz', permanent: true },
+      { source: '/analisis/:path*', destination: '/markowitz/:path*', permanent: true },
+    ]
+  },
+
   async rewrites() {
     return [
       {

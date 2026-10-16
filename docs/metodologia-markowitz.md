@@ -1,10 +1,10 @@
-# Cómo se calcula el análisis de cartera
+# Cómo se calcula la frontera eficiente de Markowitz
 
-Este documento explica, paso a paso, cómo se obtiene la frontera eficiente de Markowitz que muestra la página de Análisis, con las fórmulas necesarias para reproducir cada cifra a partir de los precios.
+Este documento explica, paso a paso, cómo se obtiene la frontera eficiente de Markowitz que muestra la página de Markowitz, con las fórmulas necesarias para reproducir cada cifra a partir de los precios.
 
 ## Índice
 
-1. Qué responde el análisis
+1. Qué responde la página de Markowitz
 2. Qué posiciones entran y cuáles se excluyen
 3. Datos y ventana temporal
 4. Rentabilidades y estadísticas por activo
@@ -29,9 +29,9 @@ Este documento explica, paso a paso, cómo se obtiene la frontera eficiente de M
 
 ---
 
-## 1. Qué responde el análisis
+## 1. Qué responde la página de Markowitz
 
-Dadas tus posiciones abiertas, el análisis responde a esta pregunta: **¿qué combinaciones de esos mismos activos tienen el menor riesgo posible para cada nivel de rentabilidad esperada, y dónde queda tu cartera actual respecto a ellas?**
+Dadas tus posiciones abiertas, la página de Markowitz responde a esta pregunta: **¿qué combinaciones de esos mismos activos tienen el menor riesgo posible para cada nivel de rentabilidad esperada, y dónde queda tu cartera actual respecto a ellas?**
 
 Convenios del cálculo:
 
@@ -214,4 +214,4 @@ donde $V_{\text{incluido}}$ es el valor en euros de los activos incluidos en el 
 - **Ventana común.** El activo con menos histórico limita la ventana de todos.
 - **Sin ventas en corto, apalancamiento ni activo libre de riesgo.**
 
-> Este análisis es informativo y no constituye asesoramiento de inversión.
+> Este cálculo es informativo y no constituye asesoramiento de inversión.

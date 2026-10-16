@@ -21,7 +21,7 @@ vi.mock('@/components/layout/AppShell', () => ({
 }))
 vi.mock('@/components/layout/Topbar', () => ({ Topbar: () => null }))
 
-const FRONTERA_URL = '/api/v1/carteras/:id/frontera-eficiente'
+const FRONTERA_URL = '/api/v1/carteras/:id/markowitz'
 
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -217,7 +217,7 @@ describe('AnalisisPage — methodology link', () => {
     await screen.findByText(/13 observaciones mensuales/)
     const header = screen.getByRole('region', { name: 'Frontera eficiente' })
     const link = within(header).getByRole('link', { name: METODOLOGIA })
-    expect(link).toHaveAttribute('href', '/analisis/metodologia')
+    expect(link).toHaveAttribute('href', '/markowitz/metodologia')
     expect(link).toHaveAttribute('target', '_blank')
     expect(link).toHaveAttribute('rel', 'noopener noreferrer')
   })
@@ -237,7 +237,7 @@ describe('AnalisisPage — methodology link', () => {
 
     await screen.findByText(detail)
     const header = screen.getByRole('region', { name: 'Frontera eficiente' })
-    expect(within(header).getByRole('link', { name: METODOLOGIA })).toHaveAttribute('href', '/analisis/metodologia')
+    expect(within(header).getByRole('link', { name: METODOLOGIA })).toHaveAttribute('href', '/markowitz/metodologia')
   })
 
   it('does not render the link without a cartera', () => {

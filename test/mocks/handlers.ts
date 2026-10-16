@@ -12,7 +12,7 @@ import { fronteraEficienteFixture } from './fixtures/fronteraEficiente'
 // that don't care about cartera selection still render normally; tests that
 // do care override it per-test with `server.use(...)`.
 //
-// `GET /api/v1/carteras/:id/frontera-eficiente` defaults to a successful
+// `GET /api/v1/carteras/:id/markowitz` defaults to a successful
 // 3-ticker frontier; error states (400/503/404) are per-test overrides.
 export const handlers = [
   http.get('/api/v1/auth/me', () => {
@@ -30,7 +30,7 @@ export const handlers = [
     ])
   }),
 
-  http.get('/api/v1/carteras/:id/frontera-eficiente', () => {
+  http.get('/api/v1/carteras/:id/markowitz', () => {
     return HttpResponse.json(fronteraEficienteFixture)
   }),
 ]

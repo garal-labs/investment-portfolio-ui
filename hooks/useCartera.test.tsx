@@ -25,7 +25,7 @@ function setup() {
 function countFronteraRequests(status: number, body: Record<string, unknown>) {
   const calls = { count: 0 }
   server.use(
-    http.get('/api/v1/carteras/:id/frontera-eficiente', () => {
+    http.get('/api/v1/carteras/:id/markowitz', () => {
       calls.count += 1
       return HttpResponse.json(body, { status })
     }),

@@ -52,7 +52,7 @@ export default function AnalisisPage() {
 
   return (
     <AppShell>
-      <Topbar title="Análisis" subtitle="Frontera eficiente de Markowitz" />
+      <Topbar title="Markowitz" subtitle="Frontera eficiente" />
 
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
         {carteraLoading && <Loading text="Cargando carteras..." />}
@@ -84,7 +84,7 @@ export default function AnalisisPage() {
                 </>
               )}
               <Link
-                href="/analisis/metodologia"
+                href="/markowitz/metodologia"
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Se abre en una pestaña nueva"

@@ -25,6 +25,14 @@ describe('proxy — route protection', () => {
     expect(response.headers.get('location')).toBeNull()
   })
 
+  it('protects /markowitz and its nested methodology page', () => {
+    for (const path of ['/markowitz', '/markowitz/metodologia']) {
+      const response = proxy(makeRequest(path))
+      expect(response.status).toBe(307)
+      expect(response.headers.get('location')).toBe('https://example.com/login')
+    }
+  })
+
   it('matches nested protected paths', () => {
     const response = proxy(makeRequest('/dashboard/settings'))
     expect(response.status).toBe(307)

@@ -7,7 +7,7 @@ backend.
 
 ## Route protection (Phase 1)
 
-- [ ] Visiting `/dashboard`, `/movimientos`, `/analisis`, or `/ajustes`
+- [ ] Visiting `/dashboard`, `/movimientos`, `/markowitz`, or `/ajustes`
       without a session cookie redirects to `/login` with no protected
       content flash.
 - [ ] Visiting `/login`, `/register`, `/forgot-password`, or

@@ -122,7 +122,7 @@ export const portfolio = {
 
   fronteraEficiente: (carteraId: number, anios: number) =>
     api
-      .get<FronteraEficiente>(`/carteras/${carteraId}/frontera-eficiente`, { params: { anios } })
+      .get<FronteraEficiente>(`/carteras/${carteraId}/markowitz`, { params: { anios } })
       .then(r => r.data),
 }
 

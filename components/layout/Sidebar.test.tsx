@@ -14,20 +14,20 @@ vi.mock('@/contexts/AuthContext', () => ({
 }))
 
 describe('Sidebar — navigation', () => {
-  it('lists "Análisis" between Resumen and Movimientos, linking to /analisis', () => {
+  it('lists "Markowitz" between Resumen and Movimientos, linking to /markowitz', () => {
     usePathnameMock.mockReturnValue('/dashboard')
     render(<Sidebar />)
 
     const links = screen.getAllByRole('link')
-    expect(links.map(l => l.textContent)).toEqual(['Resumen', 'Análisis', 'Movimientos', 'Ajustes'])
-    expect(screen.getByRole('link', { name: 'Análisis' })).toHaveAttribute('href', '/analisis')
+    expect(links.map(l => l.textContent)).toEqual(['Resumen', 'Markowitz', 'Movimientos', 'Ajustes'])
+    expect(screen.getByRole('link', { name: 'Markowitz' })).toHaveAttribute('href', '/markowitz')
   })
 
-  it('marks "Análisis" as active on /analisis', () => {
-    usePathnameMock.mockReturnValue('/analisis')
+  it('marks "Markowitz" as active on /markowitz', () => {
+    usePathnameMock.mockReturnValue('/markowitz')
     render(<Sidebar />)
 
-    expect(screen.getByRole('link', { name: 'Análisis' })).toHaveClass('font-medium')
+    expect(screen.getByRole('link', { name: 'Markowitz' })).toHaveClass('font-medium')
     expect(screen.getByRole('link', { name: 'Resumen' })).not.toHaveClass('font-medium')
   })
 })
@@ -56,7 +56,7 @@ describe('Sidebar — collapsible', () => {
     expect(aside()).toHaveAttribute('data-collapsed', 'true')
     const toggle = screen.getByRole('button', { name: 'Expandir menú' })
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
-    for (const name of ['Resumen', 'Análisis', 'Movimientos', 'Ajustes']) {
+    for (const name of ['Resumen', 'Markowitz', 'Movimientos', 'Ajustes']) {
       const link = screen.getByRole('link', { name })
       expect(link).toHaveAttribute('title', name)
       expect(screen.getByText(name)).toHaveClass('lg:sr-only')
@@ -64,6 +64,33 @@ describe('Sidebar — collapsible', () => {
     // Hidden on the desktop rail only; the mobile drawer keeps the full footer.
     expect(screen.getByText('Garal Cartera v1.0')).toHaveClass('lg:hidden')
     expect(screen.getByText('D')).toBeInTheDocument()
+  })
+
+  it('places the toggle above the navigation so it is visible without scrolling', () => {
+    usePathnameMock.mockReturnValue('/dashboard')
+    render(<Sidebar />)
+
+    const toggle = screen.getByRole('button', { name: 'Contraer menú' })
+    const firstLink = screen.getByRole('link', { name: 'Resumen' })
+    expect(toggle.compareDocumentPosition(firstLink) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('shows the toggle as an icon only, in the header next to the user name', () => {
+    usePathnameMock.mockReturnValue('/dashboard')
+    render(<Sidebar />)
+
+    const toggle = screen.getByRole('button', { name: 'Contraer menú' })
+    expect(toggle).toHaveTextContent('')
+    expect(screen.queryByText('Contraer')).not.toBeInTheDocument()
+    expect(toggle.parentElement).toContainElement(screen.getByText('Demo'))
+  })
+
+  it('stays pinned to the viewport on desktop so the toggle never scrolls away', () => {
+    usePathnameMock.mockReturnValue('/dashboard')
+    render(<Sidebar />)
+
+    expect(aside()).toHaveClass('lg:sticky', 'lg:top-0', 'lg:h-screen')
+    expect(aside()).not.toHaveClass('lg:static')
   })
 
   it('expands again', () => {
@@ -79,12 +106,12 @@ describe('Sidebar — collapsible', () => {
   })
 
   it('keeps highlighting the active link while collapsed', () => {
-    usePathnameMock.mockReturnValue('/analisis')
+    usePathnameMock.mockReturnValue('/markowitz')
     render(<Sidebar />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Contraer menú' }))
 
-    expect(screen.getByRole('link', { name: 'Análisis' })).toHaveClass('font-medium')
+    expect(screen.getByRole('link', { name: 'Markowitz' })).toHaveClass('font-medium')
     expect(screen.getByRole('link', { name: 'Resumen' })).not.toHaveClass('font-medium')
   })
 

@@ -35,7 +35,7 @@ describe('portfolio.fronteraEficiente', () => {
   it('requests the cartera frontier with `anios` as a query param', async () => {
     let requested: URL | undefined
     server.use(
-      http.get('/api/v1/carteras/:id/frontera-eficiente', ({ request }) => {
+      http.get('/api/v1/carteras/:id/markowitz', ({ request }) => {
         requested = new URL(request.url)
         return HttpResponse.json(fronteraEficienteFixture)
       }),
@@ -43,7 +43,7 @@ describe('portfolio.fronteraEficiente', () => {
 
     const data = await portfolio.fronteraEficiente(7, 3)
 
-    expect(requested?.pathname).toBe('/api/v1/carteras/7/frontera-eficiente')
+    expect(requested?.pathname).toBe('/api/v1/carteras/7/markowitz')
     expect(requested?.searchParams.get('anios')).toBe('3')
     expect(data.tickers).toEqual(['AAPL', 'MSFT', 'SAN.MC'])
   })
